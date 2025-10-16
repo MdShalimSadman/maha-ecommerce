@@ -3,6 +3,7 @@ import { getProducts } from "@/lib/sanity.queries";
 import type { Product } from "@/types/types";
 import ProductsList from "./component/common/ProductsList";
 import Hero from "./component/home/Hero";
+import Categories from "./component/home/Categories";
 
 export default async function HomePage() {
   const products: Product[] = await getProducts(); 
@@ -10,10 +11,8 @@ export default async function HomePage() {
   return (
     <main>
       <Hero/>
-      <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Our Products</h1>
+      <Categories/>
       <ProductsList products={products} />
-      </div>
     </main>
   );
 }

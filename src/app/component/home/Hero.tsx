@@ -13,17 +13,17 @@ import {
 
 const slides = [
   {
-    image: "/images/third-image.jpg",
+    image: "/images/hero/third-image.jpg",
     title: "New Collection",
     subtitle: "Discover the latest trends",
   },
   {
-    image: "/images/second-image.jpg",
+    image: "/images/hero/second-image.jpg",
     title: "Summer Sale",
     subtitle: "Up to 50% off selected items",
   },
   {
-    image: "/images/first-image.png",
+    image: "/images/hero/first-image.png",
     title: "Premium Quality",
     subtitle: "Crafted with excellence",
   },

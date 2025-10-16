@@ -15,7 +15,7 @@ const SecondaryNav = () => {
   ];
 
   return (
-    <div className="pl-20 bg-[#8d3d59] w-full text-white/90 flex items-center justify-center text-sm font-medium p-2 gap-9">
+    <div className="bg-[#7C4A4A] w-full text-white/90 flex items-center justify-center text-sm font-medium p-2 gap-9">
       {navItems.map((item) => {
         if (item.type === 'dropdown') {
           return (
@@ -32,7 +32,7 @@ const SecondaryNav = () => {
                   />
                 </motion.span>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#8d3d59] p-2 rounded-sm text-white flex flex-col">
+              <DropdownMenuContent className="bg-[#7C4A4A] p-2 rounded-sm text-white flex flex-col">
                 {item.items.map((cat) => (
                   <DropdownMenuItem key={cat} asChild>
                     <Link href={`/category/${cat.toLowerCase().replace(' ', '-')}`}>
