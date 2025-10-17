@@ -7,5 +7,8 @@ export interface Product {
   title: string;
   price: number;
   imageUrl?: string;
+  slug: {
+    current: string;
+  };
   category?: Category;
 }

@@ -5,6 +5,7 @@ export async function getProducts() {
     _id,
     title,
     price,
+    slug,
     "imageUrl": image.asset->url,
     category->{name}
   }`;

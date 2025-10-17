@@ -6,6 +6,7 @@ import { ShoppingCart } from "lucide-react";
 import type { Product } from "@/types/types";
 import { useState } from "react";
 import { Button } from "../ui/button";
+import Link from "next/link";
 
 interface ProductsListProps {
   products: Product[];
@@ -31,8 +32,9 @@ function ProductCard({ product }: { product: Product }) {
   const [hovered, setHovered] = useState(false);
 
   return (
+    <Link href={`/products/${product.slug.current}`}>
     <div
-      className="p-1 transition-all duration-300"
+      className="p-1 mb-2 transition-all duration-300"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -44,7 +46,6 @@ function ProductCard({ product }: { product: Product }) {
           className={`object-cover transition-all duration-300 cursor-pointer ${
             hovered ? "brightness-75 scale-105" : "brightness-100"
           }`}
-          priority
         />
 
         <motion.div
@@ -66,5 +67,6 @@ function ProductCard({ product }: { product: Product }) {
       <p className="text-gray-600">${product.price}</p>
       <p className="text-sm text-gray-400">{product.category?.name}</p>
     </div>
+    </Link>
   );
 }
