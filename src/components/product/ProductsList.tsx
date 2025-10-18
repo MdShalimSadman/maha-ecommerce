@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
 import type { Product } from "@/types/types";
 import { useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 interface ProductsListProps {

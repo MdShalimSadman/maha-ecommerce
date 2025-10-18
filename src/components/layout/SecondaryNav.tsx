@@ -32,7 +32,7 @@ const SecondaryNav = () => {
                   />
                 </motion.span>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#7C4A4A] p-2 rounded-sm text-white flex flex-col">
+              <DropdownMenuContent className="bg-[#7C4A4A] p-2 rounded-sm text-white flex flex-col !z-50">
                 {item.items.map((cat) => (
                   <DropdownMenuItem key={cat} asChild>
                     <Link href={`/category/${cat.toLowerCase().replace(' ', '-')}`}>

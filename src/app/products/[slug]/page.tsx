@@ -1,5 +1,6 @@
 import { client } from "@/lib/sanity.client";
 import Image from "next/image";
+import AddToCartButton from "@/components/cart/AddToCartButton";
 
 interface ProductPageProps {
   params: { slug: string };
@@ -36,7 +37,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <h1 className="text-3xl font-semibold mb-2">{product.title}</h1>
       <p className="text-gray-600 mb-2">{product.category?.name}</p>
       <p className="text-lg font-medium mb-4">${product.price}</p>
-      <p>{product.description}</p>
+      <p className="mb-6">{product.description}</p>
+
+      {/* Add to Cart button (client component) */}
+      <AddToCartButton product={product} />
     </div>
   );
 }

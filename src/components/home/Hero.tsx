@@ -9,7 +9,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "../ui/carousel";
+} from "@/components/ui/carousel";
 
 const slides = [
   {
