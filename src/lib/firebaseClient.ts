@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
+import { deleteDoc, doc, getFirestore, updateDoc } from "firebase/firestore";
+
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -16,3 +17,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 // const analytics = getAnalytics(app);
+
+export const updateOrderStatus = async (orderId, newStatus) => {
+    const orderRef = doc(db, "orders", orderId);
+    await updateDoc(orderRef, {
+        status: newStatus,
+    });
+};
+
+export const deleteOrder = async (orderId) => {
+    const orderRef = doc(db, "orders", orderId);
+    await deleteDoc(orderRef);
+};
