@@ -1,5 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+// 1. IMPORT getAuth HERE
+import { getAuth } from "firebase/auth";
 import { deleteDoc, doc, getFirestore, updateDoc } from "firebase/firestore";
 
 
@@ -15,9 +17,17 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
-// const analytics = getAnalytics(app);
 
+// 2. INITIALIZE and EXPORT Auth
+export const auth = getAuth(app); // <-- Add this line
+
+// Initialize and Export Firestore
+export const db = getFirestore(app);
+
+// Initialize Analytics (optional)
+// const analytics = getAnalytics(app); 
+
+// Export Firestore utility functions
 export const updateOrderStatus = async (orderId, newStatus) => {
     const orderRef = doc(db, "orders", orderId);
     await updateDoc(orderRef, {
