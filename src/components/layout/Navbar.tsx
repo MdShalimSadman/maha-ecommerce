@@ -4,6 +4,7 @@ import { Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import CartSheet from "../cart/CartSheet";
+import LogoutButton from "../auth/LogoutButton";
 
 const Navbar = () => {
   return (
@@ -22,6 +23,7 @@ const Navbar = () => {
       </Link>
 
       <div className="flex flex-1 gap-4 justify-end items-center">
+        <LogoutButton/>
         <Star className="text-[#5e5a57] hover:text-[#A6686A] cursor-pointer" />
         <CartSheet /> 
       </div>

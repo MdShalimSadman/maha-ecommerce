@@ -5,6 +5,7 @@ import Navbar from "../components/layout/Navbar";
 import SecondaryNav from "../components/layout/SecondaryNav";
 import WhatsAppChat from "../components/layout/WhatsAppChat";
 import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,12 +33,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-         <CartProvider>
-        <Navbar/>
-        <SecondaryNav/>
-        <WhatsAppChat/>
-        {children}
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Navbar />
+            <SecondaryNav />
+            <WhatsAppChat />
+            {children}
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
