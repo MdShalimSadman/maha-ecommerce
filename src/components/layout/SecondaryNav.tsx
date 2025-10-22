@@ -10,8 +10,7 @@ const SecondaryNav = () => {
     { label: 'CATEGORIES', type: 'dropdown', items: ['Modest Gown', 'Abaya', 'Hijab'] },
     { label: 'NEW IN', href: '/new-in' },
     { label: 'SALE', href: '/sale' },
-    { label: 'ABOUT', href: '/about' },
-    { label: 'CONTACT', href: '/contact' },
+    { label: 'TRACK ORDER', href: '/track-order' },
   ];
 
   return (

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebaseClient'; // Import your client-side auth instance (assuming this path)
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -121,13 +122,10 @@ export default function LoginPage() {
         </form>
         
         {/* Signup Link */}
-        <div className="text-sm text-center">
-          <p className="text-gray-600">
-            Don&apos;t have an account? 
-            <a href="/signup" className="ml-1 font-medium text-indigo-600 hover:text-indigo-500">
-              Sign Up
-            </a>
-          </p>
+        <div className="text-sm text-center">  
+            <Link href="/forgot-password" className="ml-1 font-medium text-indigo-600 hover:text-indigo-500">
+              Forgot Password?
+            </Link>
         </div>
       </div>
     </div>

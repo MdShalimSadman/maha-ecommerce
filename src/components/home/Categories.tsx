@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 const categories = [
@@ -16,7 +17,7 @@ const Categories = () => {
 
       <div className="flex justify-between mt-12 gap-12">
         {categories.map((category) => (
-          <div key={category.name} className="flex flex-col items-center gap-3">
+          <Link href={`/category/${category.name.toLowerCase().replace(' ', '-')}`} key={category.name} className="flex flex-col items-center gap-3">
             <div className="relative w-60 h-60 overflow-hidden rounded-full border border-gray-200">
               <Image
                 src={category.src}
@@ -27,7 +28,7 @@ const Categories = () => {
               />
             </div>
             <p className="text-lg font-medium text-[#5e5a57] ">{category.name}</p>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
