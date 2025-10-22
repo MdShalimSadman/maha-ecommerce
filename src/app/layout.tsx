@@ -6,6 +6,7 @@ import SecondaryNav from "../components/layout/SecondaryNav";
 import WhatsAppChat from "../components/layout/WhatsAppChat";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,10 +36,12 @@ export default function RootLayout({
       >
         <AuthProvider>
           <CartProvider>
+            <WishlistProvider>
             <Navbar />
             <SecondaryNav />
             <WhatsAppChat />
             {children}
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>
