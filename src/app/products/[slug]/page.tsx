@@ -1,6 +1,7 @@
 import { client } from "@/lib/sanity.client";
 import Image from "next/image";
 import AddToCartButton from "@/components/cart/AddToCartButton";
+import WishlistButton from "@/components/wishlist/WIshlistButton";
 
 interface ProductPageProps {
   params: { slug: string };
@@ -13,7 +14,8 @@ async function getProduct(slug: string) {
     price,
     "imageUrl": image.asset->url,
     category->{name},
-    description
+    description,
+    slug
   }`;
   return client.fetch(query, { slug });
 }
@@ -39,8 +41,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <p className="text-lg font-medium mb-4">${product.price}</p>
       <p className="mb-6">{product.description}</p>
 
-      {/* Add to Cart button (client component) */}
-      <AddToCartButton product={product} />
+      {/* Action buttons */}
+      <div className="flex gap-4 items-center">
+        <AddToCartButton product={product} />
+        <WishlistButton product={product} />
+      </div>
+
     </div>
   );
 }
