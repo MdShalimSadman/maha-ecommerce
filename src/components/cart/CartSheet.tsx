@@ -20,10 +20,12 @@ export default function CartSheet() {
     getTotalPrice,
     increaseQuantity,
     decreaseQuantity,
+    isCartOpen,
+    setIsCartOpen,
   } = useCart();
 
   return (
-    <Sheet>
+    <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
       <SheetTrigger asChild>
         <div className="relative cursor-pointer">
           <ShoppingCart className="text-[#5e5a57] hover:text-[#A6686A]" />
@@ -41,9 +43,7 @@ export default function CartSheet() {
         </SheetHeader>
 
         {cartItems.length === 0 ? (
-          <p className="text-center mt-6 text-gray-500">
-            Your cart is empty
-          </p>
+          <p className="text-center mt-6 text-gray-500">Your cart is empty</p>
         ) : (
           <div className="mt-6 space-y-4">
             {cartItems.map((item) => (
@@ -107,9 +107,9 @@ export default function CartSheet() {
                 <span>${getTotalPrice().toFixed(2)}</span>
               </div>
               <Link href="/checkout">
-              <Button className="w-full mt-4 bg-[#A6686A] text-white hover:bg-[#91585A]">
-                Checkout
-              </Button>
+                <Button className="w-full mt-4 bg-[#A6686A] text-white hover:bg-[#91585A]">
+                  Checkout
+                </Button>
               </Link>
             </div>
           </div>

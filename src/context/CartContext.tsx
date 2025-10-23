@@ -15,6 +15,8 @@ interface CartContextType {
   getTotalPrice: () => number;
   increaseQuantity: (id: string) => void;
   decreaseQuantity: (id: string) => void;
+  isCartOpen: boolean;
+  setIsCartOpen: (open: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -22,8 +24,8 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Load from localStorage only once on mount
   useEffect(() => {
     const stored = localStorage.getItem("cart");
     if (stored) {
@@ -36,7 +38,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setIsLoaded(true);
   }, []);
 
-  // Save to localStorage whenever cartItems changes (but only after initial load)
   useEffect(() => {
     if (isLoaded) {
       localStorage.setItem("cart", JSON.stringify(cartItems));
@@ -55,6 +56,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
       return [...prev, { ...product, quantity: 1 }];
     });
+
+    // 👉 Open the cart sheet after adding
+    setIsCartOpen(true);
   };
 
   const removeFromCart = (id: string) => {
@@ -96,6 +100,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         getTotalPrice,
         increaseQuantity,
         decreaseQuantity,
+        isCartOpen,
+        setIsCartOpen,
       }}
     >
       {children}
