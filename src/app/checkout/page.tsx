@@ -1,53 +1,51 @@
 "use client";
 
 import { useCart } from "@/context/CartContext";
-
 import { useForm } from "react-hook-form";
-
 import { Input } from "@/components/ui/input";
-
 import { Button } from "@/components/ui/button";
-
 import { Label } from "@/components/ui/label";
-
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-
 import { useRouter } from "next/navigation";
-
 import { useState } from "react";
-
-// 1. Import Jotai hook and atom
-
+// Jotai Imports
 import { useSetAtom } from "jotai";
-
 import { orderIdAtom } from "@/atoms/orderAtom"; // <--- Adjust path as needed
+// Mail.js Import
+import emailjs from "@emailjs/browser";
 
-// Import Firestore functions and your Firebase instance
-
+// Firebase Imports
 import { db } from "@/lib/firebaseClient";
-
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 interface CheckoutFormData {
   fullName: string;
-
   email: string;
-
   phone: string;
-
   address: string;
-
   paymentMethod: string;
 }
+
+// Environment variables for Mail.js (must be NEXT_PUBLIC_ for client-side use)
+
+const EMAILJS_SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+
+const EMAILJS_CUSTOMER_TEMPLATE_ID =
+  process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+
+const EMAILJS_ADMIN_TEMPLATE_ID =
+  process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID;
+
+const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
 
 export default function CheckoutPage() {
   const { cartItems, getTotalPrice, clearCart } = useCart();
 
   const router = useRouter();
 
-  const [isSubmitting, setIsSubmitting] = useState(false); // State for loading indicator
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 2. Get the setter for the order ID atom
+  // Get the setter for the order ID atom
 
   const setOrderId = useSetAtom(orderIdAtom);
 
@@ -58,16 +56,12 @@ export default function CheckoutPage() {
 
     formState: { errors },
   } = useForm<CheckoutFormData>({
-    // Set default value for the radio group field
-
     defaultValues: {
       paymentMethod: "cash_on_delivery",
     },
   });
 
-  // 3. Function to save the order data to Firestore
-
-  // NOTE: We now return the docRef.id on success
+  // Function to save the order data to Firestore and return the ID
 
   const saveOrderToFirestore = async (
     data: CheckoutFormData
@@ -75,8 +69,6 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
-      // Prepare the order object
-
       const orderData = {
         ...data,
 
@@ -92,12 +84,10 @@ export default function CheckoutPage() {
 
         totalPrice: getTotalPrice(),
 
-        orderDate: serverTimestamp(), // Use Firebase's server timestamp
+        orderDate: serverTimestamp(),
 
         status: "Pending",
       };
-
-      // Add a new document to the "orders" collection
 
       const docRef = await addDoc(collection(db, "orders"), orderData);
 
@@ -105,34 +95,161 @@ export default function CheckoutPage() {
 
       console.log("Order submitted with ID: ", orderId);
 
-      return orderId; // Return the success ID
+      return orderId;
     } catch (e) {
       console.error("Error adding document: ", e);
 
       alert("An error occurred while placing your order. Please try again.");
 
-      return null; // Return null on failure
-    } finally {
-      setIsSubmitting(false);
+      return null;
     }
   };
 
-  // 4. Update onSubmit to handle async data saving and redirect
+  // Function to send confirmation email to the Customer
+
+  const sendCustomerConfirmationEmail = async ({
+    orderId,
+    email,
+    fullName,
+    totalPrice,
+  }) => {
+    if (
+      !EMAILJS_SERVICE_ID ||
+      !EMAILJS_CUSTOMER_TEMPLATE_ID ||
+      !EMAILJS_PUBLIC_KEY
+    ) {
+      console.error(
+        "Mail.js Customer variables are not fully set. Skipping customer email."
+      );
+
+      return;
+    }
+
+    const templateParams = {
+      order_id: orderId,
+
+      to_email: email,
+
+      customer_name: fullName,
+
+      total_price: totalPrice.toFixed(2),
+    };
+
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+
+        EMAILJS_CUSTOMER_TEMPLATE_ID,
+
+        templateParams,
+
+        EMAILJS_PUBLIC_KEY
+      );
+
+      console.log("Order email sent to Customer successfully.");
+    } catch (error) {
+      console.error("Error sending email to customer with Mail.js:", error);
+    }
+  };
+
+  // Function to send notification email to the Admin
+
+  const sendAdminNotification = async (
+    data: CheckoutFormData,
+    orderId: string,
+    totalPrice: number
+  ) => {
+    if (
+      !EMAILJS_SERVICE_ID ||
+      !EMAILJS_ADMIN_TEMPLATE_ID ||
+      !EMAILJS_PUBLIC_KEY
+    ) {
+      console.error(
+        "Mail.js Admin variables are not fully set. Skipping admin email."
+      );
+
+      return;
+    }
+
+    const templateParams = {
+      order_id: orderId,
+
+      customer_name: data.fullName,
+
+      to_email: data.email,
+
+      customer_phone: data.phone,
+
+      customer_address: data.address,
+
+      total_price: totalPrice.toFixed(2),
+
+      payment_method: data.paymentMethod.replace(/_/g, " "),
+    };
+
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+
+        EMAILJS_ADMIN_TEMPLATE_ID,
+
+        templateParams,
+
+        EMAILJS_PUBLIC_KEY
+      );
+
+      console.log("Order notification sent to Admin successfully.");
+    } catch (error) {
+      console.error("Error sending admin email with Mail.js:", error);
+    }
+  };
+
+  // Main submission handler
 
   const onSubmit = async (data: CheckoutFormData) => {
+    // 1. Save order to Firestore and set loading
+
     const orderId = await saveOrderToFirestore(data);
 
+    const totalPrice = getTotalPrice();
+
     if (orderId) {
-      // Set the order ID in the Jotai atom
+      // 2. Set the order ID in the Jotai atom
 
       setOrderId(orderId);
 
-      clearCart();
+      // 3. Prepare email promises
 
-      // Pass the ID in the URL as a query parameter as well
+      const customerEmailPromise = sendCustomerConfirmationEmail({
+        orderId,
+
+        email: data.email,
+
+        fullName: data.fullName,
+
+        totalPrice: totalPrice,
+      });
+
+      const adminEmailPromise = sendAdminNotification(
+        data,
+        orderId,
+        totalPrice
+      );
+
+      // 4. Wait for both emails to attempt sending
+
+      await Promise.allSettled([customerEmailPromise, adminEmailPromise]);
+
+      // 5. Clean up and redirect
+
+      clearCart();
 
       router.push("/thank-you");
     }
+
+    // Always stop loading after attempting submission and redirection
+
+    setIsSubmitting(false);
   };
 
   if (cartItems.length === 0)
@@ -143,8 +260,6 @@ export default function CheckoutPage() {
     );
 
   return (
-    // ... (rest of the component JSX is the same)
-
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-[#FDF7F2] rounded-xl shadow-sm">
       <h1 className="text-3xl font-semibold text-[#A6686A] mb-6 text-center">
         Checkout
@@ -227,18 +342,14 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* === Payment Methods (Updated to use register) === */}
+        {/* === Payment Methods === */}
 
         <div>
           <Label className="block text-base font-medium text-[#5e5a57] mb-2">
             Payment Method
           </Label>
 
-          <RadioGroup
-            defaultValue="cash_on_delivery"
-
-            // The value is read by react-hook-form using the register prop on the RadioGroupItem
-          >
+          <RadioGroup defaultValue="cash_on_delivery">
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="bkash" id="bkash" disabled />
@@ -260,20 +371,16 @@ export default function CheckoutPage() {
                 <RadioGroupItem
                   value="cash_on_delivery"
                   id="cash_on_delivery"
-                  // NOTE: Use the register prop on the RadioGroupItem that you want to be selected by default and pass its name.
-
                   {...register("paymentMethod")}
                 />
 
                 <Label htmlFor="cash_on_delivery">Cash on Delivery</Label>
               </div>
-
-              {/* Optional: Add validation error for payment method if needed, though with default value it's unlikely */}
             </div>
           </RadioGroup>
         </div>
 
-        {/* === Order Summary (Unchanged) === */}
+        {/* === Order Summary === */}
 
         <div className="border-t border-gray-300 pt-4">
           <h2 className="text-xl font-semibold mb-3">Order Summary</h2>
@@ -295,7 +402,7 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* === Submit Button (Updated for loading state) === */}
+        {/* === Submit Button === */}
 
         <Button
           type="submit"
