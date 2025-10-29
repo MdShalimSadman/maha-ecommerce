@@ -1,3 +1,5 @@
+// components/admin/OrdersPage.tsx (or wherever your admin component lives)
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -26,7 +28,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+}
+ from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   BarChart,
@@ -62,6 +65,8 @@ interface OrderItem {
   title: string;
   price: number;
   quantity: number;
+  // 🟢 UPDATED: Include the selectedSize field
+  selectedSize?: number | null; 
 }
 
 interface FirestoreOrder {
@@ -122,7 +127,7 @@ const OrderAnalysisChart = ({
   );
 };
 
-// --- Component 2: OrderDetailDialog (New) ---
+// --- Component 2: OrderDetailDialog (Updated) ---
 
 interface OrderDetailDialogProps {
   order: FirestoreOrder | null;
@@ -145,9 +150,8 @@ const OrderDetailDialog = ({
       case "Shipped":
         return "secondary";
       case "Processing":
-        return "outline";
       case "Pending":
-        return "destructive";
+        return "outline";
       case "Cancelled":
         return "destructive";
       default:
@@ -216,6 +220,8 @@ const OrderDetailDialog = ({
           <TableHeader>
             <TableRow>
               <TableHead>Item</TableHead>
+              {/* 🟢 NEW: Size Column */}
+              <TableHead className="text-center">Size</TableHead> 
               <TableHead className="text-right">Quantity</TableHead>
               <TableHead className="text-right">Price/Unit</TableHead>
               <TableHead className="text-right">Subtotal</TableHead>
@@ -225,6 +231,16 @@ const OrderDetailDialog = ({
             {order.items.map((item) => (
               <TableRow key={item._id}>
                 <TableCell className="font-medium">{item.title}</TableCell>
+                
+                {/* 🟢 NEW: Size Display */}
+                <TableCell className="text-center font-semibold">
+                    {/* Display size or 'N/A' if not present */}
+                    {item.selectedSize !== null && item.selectedSize !== undefined 
+                        ? item.selectedSize 
+                        : "N/A"
+                    }
+                </TableCell>
+                
                 <TableCell className="text-right">{item.quantity}</TableCell>
                 <TableCell className="text-right">
                   ${item.price.toFixed(2)}
@@ -241,7 +257,7 @@ const OrderDetailDialog = ({
   );
 };
 
-// --- Component 3: OrdersPage (Main Component) ---
+// --- Component 3: OrdersPage (Main Component - Unchanged Logic) ---
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<FirestoreOrder[]>([]);
@@ -464,7 +480,7 @@ export default function OrdersPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleViewDetails(order)} // <-- UPDATED
+                        onClick={() => handleViewDetails(order)}
                         className="text-[#A6686A]"
                       >
                         View
