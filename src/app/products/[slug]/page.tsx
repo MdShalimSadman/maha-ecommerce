@@ -15,7 +15,9 @@ async function getProduct(slug: string) {
     "imageUrl": image.asset->url,
     category->{name},
     description,
-    slug
+    slug,
+    sale,
+    sizes
   }`;
   return client.fetch(query, { slug });
 }

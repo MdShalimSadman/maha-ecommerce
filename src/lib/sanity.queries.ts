@@ -7,7 +7,9 @@ export async function getProducts() {
     price,
     slug,
     "imageUrl": image.asset->url,
-    category->{name}
+    category->{name},
+    sale,
+    sizes
   }`;
   
   return await client.fetch(query);
