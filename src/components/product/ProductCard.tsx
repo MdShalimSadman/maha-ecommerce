@@ -48,7 +48,7 @@ const ProductCard = ({ product }: { product: Product }) => {
         )}
 
         {/* 🖼️ Product Image */}
-        <div className="relative w-full h-[500px] overflow-hidden cursor-pointer rounded-lg">
+        <div className="relative w-full h-[500px] overflow-hidden cursor-pointer">
           <Image
             src={product.imageUrl || "/images/categories/hijab"}
             alt={product.title}
@@ -89,7 +89,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           <p className="text-gray-600">BDT{product.price}</p>
         )}
 
-        <p className="text-sm text-gray-400">{product.category?.name}</p>
+        {/* <p className="text-sm text-gray-400">{product.category?.name}</p> */}
       </div>
     </Link>
   );
