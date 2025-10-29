@@ -31,7 +31,7 @@ export default function CartSheet() {
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
       <SheetTrigger asChild>
         <div className="relative cursor-pointer">
-          <ShoppingCart className="text-[#5e5a57] hover:text-[#A6686A]" />
+          <ShoppingCart className="text-[#7C4A4A] hover:text-[#A6686A]" />
           {cartItems.length > 0 && (
             <span className="absolute -top-1 -right-2 bg-[#A6686A] text-white text-xs rounded-full px-1.5">
               {/* NOTE: You might want to display the total quantity of items (sum of all item.quantity) 

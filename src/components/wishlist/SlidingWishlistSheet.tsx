@@ -12,7 +12,7 @@ const SlidingWishlistSheet = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Heart className="text-[#5e5a57] hover:text-[#A6686A] cursor-pointer" />
+        <Heart className="text-[#7C4A4A] hover:text-[#A6686A] cursor-pointer" />
       </SheetTrigger>
 
       <SheetContent side="right" className="bg-[#FDF7F2] w-[400px]">

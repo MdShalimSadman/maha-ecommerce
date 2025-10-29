@@ -90,25 +90,30 @@ const GlobalSearch = () => {
   const hasResults = results.products.length > 0 || results.categories.length > 0;
 
   return (
-    <div ref={searchRef} className="relative w-full max-w-md">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-        <Input
-          type="text"
-          placeholder="Search products, categories..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="pl-10 pr-10 bg-white border-gray-200 focus:border-[#A6686A]"
-        />
-        {query && (
-          <button
-            onClick={clearSearch}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
-      </div>
+    <div ref={searchRef} className="relative w-fit md:min-w-60 max-w-md">
+     <div className="relative">
+  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+  <Input
+    type="text"
+    placeholder="Search products, categories..."
+    value={query}
+    onChange={(e) => setQuery(e.target.value)}
+    className="
+      pl-10 w-full bg-transparent border-0 border-b border-[#A6686A]
+      focus:border-[#7C4A4A] focus:!ring-0 
+      transition-colors duration-200 !rounded-none
+    "
+  />
+  {query && (
+    <button
+      onClick={clearSearch}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+    >
+      <X className="w-4 h-4" />
+    </button>
+  )}
+</div>
+
 
       {/* Search Results Dropdown */}
       {isOpen && (
