@@ -8,7 +8,6 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetClose,
 } from "@/components/ui/sheet";
 import {
   Accordion,
@@ -51,7 +50,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ navItems }) => {
           <GlobalSearch />
         </div>
 
-        <div className="flex flex-col gap-2 text-[#7C4A4A] flex-1 h-full overflow-y-auto">
+        <div className="mt-8 flex flex-col gap-2 text-[#7C4A4A] flex-1 h-full overflow-y-auto">
           {navItems.map((item) => {
             if (item.type === "accordion" && item.items) {
               return (

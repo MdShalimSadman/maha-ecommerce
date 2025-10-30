@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${playfair.variable} ${poppins.variable} antialiased`}
+        className={`${playfair.variable} ${poppins.variable} ${poppins.className} antialiased`}
       >
         <AuthProvider>
           <CartProvider>

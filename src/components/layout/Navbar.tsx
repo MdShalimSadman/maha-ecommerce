@@ -47,7 +47,7 @@ const Navbar = () => {
 
         <div className="flex flex-1 gap-4 justify-end items-center">
           <div className="hidden md:block">
-           <LogoutDropdown/>
+            <LogoutDropdown />
           </div>
           <SlidingWishlistSheet />
           <CartSheet />

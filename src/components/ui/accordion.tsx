@@ -1,17 +1,20 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as AccordionPrimitive from "@radix-ui/react-accordion"
-import { ChevronDownIcon } from "lucide-react"
+import * as React from "react";
+import * as AccordionPrimitive from "@radix-ui/react-accordion";
+import { ChevronDownIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-import { cn } from "@/lib/utils"
-
-function Accordion({
-  ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Root>) {
-  return <AccordionPrimitive.Root data-slot="accordion" {...props} />
+// -------------------------
+// Accordion Root
+// -------------------------
+function Accordion(props: React.ComponentProps<typeof AccordionPrimitive.Root>) {
+  return <AccordionPrimitive.Root data-slot="accordion" {...props} />;
 }
 
+// -------------------------
+// Accordion Item
+// -------------------------
 function AccordionItem({
   className,
   ...props
@@ -22,14 +25,23 @@ function AccordionItem({
       className={cn("border-b last:border-b-0", className)}
       {...props}
     />
-  )
+  );
+}
+
+// -------------------------
+// Accordion Trigger with iconClassName support
+// -------------------------
+interface AccordionTriggerProps
+  extends React.ComponentProps<typeof AccordionPrimitive.Trigger> {
+  iconClassName?: string;
 }
 
 function AccordionTrigger({
   className,
   children,
+  iconClassName,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
+}: AccordionTriggerProps) {
   return (
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
@@ -41,12 +53,20 @@ function AccordionTrigger({
         {...props}
       >
         {children}
-        <ChevronDownIcon className="text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200" />
+        <ChevronDownIcon
+          className={cn(
+            "text-muted-foreground pointer-events-none w-4 h-4 shrink-0 translate-y-0.5 transition-transform duration-200",
+            iconClassName
+          )}
+        />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
-  )
+  );
 }
 
+// -------------------------
+// Accordion Content
+// -------------------------
 function AccordionContent({
   className,
   children,
@@ -60,7 +80,10 @@ function AccordionContent({
     >
       <div className={cn("pt-0 pb-4", className)}>{children}</div>
     </AccordionPrimitive.Content>
-  )
+  );
 }
 
-export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
+// -------------------------
+// Export
+// -------------------------
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };
