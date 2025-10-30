@@ -197,7 +197,7 @@ const GlobalSearch = () => {
                           </p>
                           <div className="flex items-center gap-2 mt-1">
                             <p className="text-[#A6686A] font-semibold text-sm">
-                              ${product.price.toFixed(2)}
+                              BDT {product.price.toFixed(2)}
                             </p>
                             {product.category && (
                               <span className="text-xs text-gray-500">

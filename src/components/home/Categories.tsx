@@ -15,7 +15,7 @@ const Categories = () => {
         Top Categories
       </h2>
 
-      <div className="flex justify-between mt-12 gap-12">
+      <div className="flex flex-col md:flex-row justify-between mt-12 gap-12">
         {categories.map((category) => (
           <Link href={`/category/${category.name.toLowerCase().replace(' ', '-')}`} key={category.name} className="flex flex-col items-center gap-3">
             <div className="relative w-60 h-60 overflow-hidden rounded-full border border-gray-200">

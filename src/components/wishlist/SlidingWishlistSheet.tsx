@@ -1,6 +1,12 @@
 "use client";
 
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Heart, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,17 +18,28 @@ const SlidingWishlistSheet = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Heart className="text-[#7C4A4A] hover:text-[#A6686A] cursor-pointer" />
+        <div className="relative cursor-pointer">
+          <Heart className="text-[#7C4A4A] hover:text-[#A6686A]" />
+          {wishlist.length > 0 && (
+            <span className="absolute -top-2 -right-2 bg-[#A6686A] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+              {wishlist.length}
+            </span>
+          )}
+        </div>
       </SheetTrigger>
 
       <SheetContent side="right" className="bg-[#FDF7F2] w-[400px]">
         <SheetHeader>
-          <SheetTitle className="text-[#A6686A] text-lg">Your Wishlist</SheetTitle>
+          <SheetTitle className="text-[#A6686A] text-lg">
+            Your Wishlist
+          </SheetTitle>
         </SheetHeader>
 
         <div className="mt-4 space-y-4 overflow-y-auto max-h-[80vh]">
           {wishlist.length === 0 ? (
-            <p className="text-center text-gray-500 mt-6">Your wishlist is empty 💔</p>
+            <p className="text-center text-gray-500 mt-6">
+              Your wishlist is empty 💔
+            </p>
           ) : (
             wishlist.map((product) => (
               <div

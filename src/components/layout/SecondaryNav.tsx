@@ -14,7 +14,7 @@ const SecondaryNav = () => {
   ];
 
   return (
-    <div className="text-[#7C4A4A] w-full flex items-center justify-center text-sm font-medium p-3 gap-9">
+    <div className="hidden md:flex text-[#7C4A4A] w-full items-center justify-center text-sm font-medium p-3 gap-9">
       {navItems.map((item) => {
         if (item.type === 'dropdown') {
           return (

@@ -33,9 +33,7 @@ export default function CartSheet() {
         <div className="relative cursor-pointer">
           <ShoppingCart className="text-[#7C4A4A] hover:text-[#A6686A]" />
           {cartItems.length > 0 && (
-            <span className="absolute -top-1 -right-2 bg-[#A6686A] text-white text-xs rounded-full px-1.5">
-              {/* NOTE: You might want to display the total quantity of items (sum of all item.quantity) 
-                  instead of cartItems.length (which is the count of unique item types/sizes) */}
+            <span className="absolute -top-2 -right-2 bg-[#A6686A] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
               {cartItems.length}
             </span>
           )}
