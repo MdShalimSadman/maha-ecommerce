@@ -9,7 +9,8 @@ const GradientButton: FC<{
   hoverTextColorClass?: string;
   hoverBgColorClass?: string;
   borderColorClass?: string;
-  disabled?: boolean; // ✅ new prop
+  disabled?: boolean; 
+  type?: "button" | "submit" | "reset"; // ✅ added type prop
 }> = ({
   children,
   onClick,
@@ -18,15 +19,17 @@ const GradientButton: FC<{
   hoverBgColorClass = 'bg-white',
   borderColorClass = 'border-[#7C4A4A]',
   disabled = false,
+  type = "button", // default
 }) => {
   return (
     <Button
       onClick={onClick}
-      disabled={disabled} // ✅ ensures the button is not clickable
+      disabled={disabled}
+      type={type} // ✅ set the button type
       className={cn(
         'group relative z-0 overflow-hidden rounded-full bg-gradient-to-r from-[#7C4A4A] to-[#A6686A] text-white transition-all duration-500',
         disabled
-          ? 'opacity-50 cursor-not-allowed pointer-events-none' // ✅ visual + functional disable state
+          ? 'opacity-50 cursor-not-allowed pointer-events-none'
           : 'hover:opacity-90',
         className,
       )}
@@ -34,13 +37,13 @@ const GradientButton: FC<{
       <span
         className={cn(
           'relative z-10 transition-colors duration-300',
-          !disabled && hoverTextColorClass, // ✅ disable hover text change when inactive
+          !disabled && hoverTextColorClass,
         )}
       >
         {children}
       </span>
 
-      {!disabled && ( // ✅ only show hover effects when enabled
+      {!disabled && (
         <>
           <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
             <span

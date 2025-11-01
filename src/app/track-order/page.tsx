@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import { db } from "@/lib/firebaseClient";
 import { doc, getDoc, type Timestamp } from "firebase/firestore";
 import { useSearchParams } from "next/navigation";
@@ -36,11 +37,7 @@ interface OrderDetailDialogProps {
 const OrderDetailDialog = ({ order }: OrderDetailDialogProps) => {
   if (!order) return null;
 
-  // 🎨 Color mapping for each status
-  const statusColors: Record<
-    FirestoreOrder["status"],
-    string
-  > = {
+  const statusColors: Record<FirestoreOrder["status"], string> = {
     Pending: "#FBBF24",
     Processing: "#60A5FA",
     Shipped: "#34D399",
@@ -48,7 +45,7 @@ const OrderDetailDialog = ({ order }: OrderDetailDialogProps) => {
     Cancelled: "#EF4444",
   };
 
-  const statusColor = statusColors[order.status] || "#6B7280"; // default gray if none
+  const statusColor = statusColors[order.status] || "#6B7280";
 
   return (
     <Card className="px-6 mt-4 shadow-lg">
@@ -61,13 +58,9 @@ const OrderDetailDialog = ({ order }: OrderDetailDialogProps) => {
         <p>Total: BDT {order.totalPrice.toFixed(2)}</p>
         <p>Order ID: {order.id}</p>
 
-        {/* 🧩 Colored Status */}
         <div className="flex items-center gap-2 mt-1">
           <p className="font-medium">Status:</p>
-          <span
-            className="font-semibold"
-            style={{ color: statusColor }}
-          >
+          <span className="font-semibold" style={{ color: statusColor }}>
             {order.status}
           </span>
         </div>
@@ -76,26 +69,36 @@ const OrderDetailDialog = ({ order }: OrderDetailDialogProps) => {
   );
 };
 
+interface FormValues {
+  orderId: string;
+  email: string;
+}
 
 export default function TrackOrderPage() {
   const searchParams = useSearchParams();
   const urlOrderId = searchParams.get("orderId");
   const urlEmail = searchParams.get("email");
 
-  const [orderId, setOrderId] = useState(urlOrderId || "");
-  const [email, setEmail] = useState(urlEmail || "");
-  const [order, setOrder] = useState<FirestoreOrder | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    defaultValues: {
+      orderId: urlOrderId || "",
+      email: urlEmail || "",
+    },
+  });
 
-  // 🧭 Create ref to scroll to the order details
+  const [order, setOrder] = useState<FirestoreOrder | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const orderDetailRef = useRef<HTMLDivElement | null>(null);
 
   const fetchOrder = async (id: string, customerEmail: string) => {
     const trimmedEmail = customerEmail.trim().toLowerCase();
     if (!id || !trimmedEmail) return;
 
-    setLoading(true);
     setFetchError(null);
     setOrder(null);
 
@@ -122,10 +125,15 @@ export default function TrackOrderPage() {
       setFetchError(
         "An error occurred while fetching the order. Please try again."
       );
-    } finally {
-      setLoading(false);
     }
   };
+
+  // Scroll to order detail when loaded
+  useEffect(() => {
+    if (order && orderDetailRef.current) {
+      orderDetailRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [order]);
 
   useEffect(() => {
     if (urlOrderId && urlEmail) {
@@ -133,22 +141,11 @@ export default function TrackOrderPage() {
     }
   }, [urlOrderId, urlEmail]);
 
-  // 🔽 Scroll down when order data is fetched
-  useEffect(() => {
-    if (order && orderDetailRef.current) {
-      orderDetailRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [order]);
-
-  const handleTrack = () => {
-    if (orderId.trim().length > 0 && email.trim().length > 0) {
-      fetchOrder(orderId.trim(), email.trim());
-    } else {
-      setFetchError("Please enter both the Order ID and Email Address.");
-    }
+  const onSubmit = async (data: FormValues) => {
+    await fetchOrder(data.orderId.trim(), data.email.trim());
   };
 
-  // 🧩 Step-based progress configuration
+  // Progress bar config
   const sections = [
     { id: "1", title: "Pending", iconColor: "#FBBF24" },
     { id: "2", title: "Processing", iconColor: "#60A5FA" },
@@ -174,67 +171,81 @@ export default function TrackOrderPage() {
   };
 
   const progress =
-    order && order.status
-      ? getProgressInfo(order.status)
-      : { index: 0, percent: 0 };
+    order && order.status ? getProgressInfo(order.status) : { index: 0, percent: 0 };
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6">
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-[#A6686A]">
-            Track Your Order
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4 text-sm text-gray-700">
-            Please enter your unique Order ID and the Email Address used for the
-            order.
-          </p>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-[#A6686A]">
+              Track Your Order
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4 text-sm text-gray-700">
+              Please enter your unique Order ID and the Email Address used for the
+              order.
+            </p>
 
-          <div className="space-y-4">
-            <Input
-              type="text"
-              placeholder="Enter Order ID (e.g., V4XkL8qZ)"
-              className="pl-0 w-full bg-transparent border-0 border-b border-[#A6686A]
-              focus:border-[#7C4A4A] focus:!ring-0 
-              transition-colors duration-200 !rounded-none"
-              value={orderId}
-              onChange={(e) => setOrderId(e.target.value)}
-              aria-label="Order ID Input"
-            />
-            <Input
-              type="email"
-              placeholder="Enter Email Address"
-              value={email}
-              className="pl-0 w-full bg-transparent border-0 border-b border-[#A6686A]
-              focus:border-[#7C4A4A] focus:!ring-0 
-              transition-colors duration-200 !rounded-none"
-              onChange={(e) => setEmail(e.target.value)}
-              aria-label="Email Address Input"
-            />
-            <GradientButton
-              onClick={handleTrack}
-              disabled={
-                loading ||
-                orderId.trim().length === 0 ||
-                email.trim().length === 0
-              }
-              className="w-full mt-4 cursor-pointer"
-            >
-              {loading ? "Tracking..." : "Track Order"}
-            </GradientButton>
-          </div>
+            <div className="space-y-4">
+              <div>
+              <Input
+                type="text"
+                placeholder="Enter Order ID (e.g., V4XkL8qZ)"
+                className={`pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none`}
+                {...register("orderId", { required: "Order ID is required" })}
+                aria-label="Order ID Input"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSubmit(onSubmit)();
+                }}
+              />
+              {errors.orderId && (
+                <p className="text-red-500 text-sm">{errors.orderId.message}</p>
+              )}
+</div>
 
-          {fetchError && (
-            <div className="p-2 mt-4 rounded-md bg-red-200">
-              <p className="text-sm text-red-500 font-normal">{fetchError}</p>
+<div>
+              <Input
+                type="email"
+                placeholder="Enter Email Address"
+                className={`pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none`}
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value:
+                      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                    message: "Invalid email address",
+                  },
+                })}
+                aria-label="Email Address Input"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSubmit(onSubmit)();
+                }}
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email.message}</p>
+              )}
+</div>
+
+              <GradientButton
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full mt-4 cursor-pointer"
+              >
+                {isSubmitting ? "Tracking..." : "Track Order"}
+              </GradientButton>
             </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* 🧭 Attach ref here */}
+            {fetchError && (
+              <div className="p-2 mt-4 rounded-md bg-red-200">
+                <p className="text-sm text-red-500 font-normal">{fetchError}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </form>
+
       <div ref={orderDetailRef}>
         <OrderDetailDialog order={order} />
       </div>
