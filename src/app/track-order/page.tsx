@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { db } from "@/lib/firebaseClient"; // Assuming db is the firestore instance
-import { doc, getDoc, type Timestamp } from "firebase/firestore"; // Import doc and getDoc for single document retrieval
-import { useSearchParams } from "next/navigation"; // For Next.js to read query parameters
+import { db } from "@/lib/firebaseClient";
+import { doc, getDoc, type Timestamp } from "firebase/firestore";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import GradientButton from "@/components/common/GradientButton";
 
-// --- Interface Definitions (Kept the same) ---
 interface OrderItem {
   _id: string;
   title: string;
@@ -20,7 +18,7 @@ interface OrderItem {
 interface FirestoreOrder {
   id: string;
   fullName: string;
-  email: string; // <-- This is the key field for security check
+  email: string;
   phone: string;
   address: string;
   paymentMethod: string;
@@ -30,51 +28,39 @@ interface FirestoreOrder {
   orderDate: Timestamp;
 }
 
-// Placeholder for OrderDetailDialog (Kept the same)
 interface OrderDetailDialogProps {
   order: FirestoreOrder | null;
-  isOpen: boolean;
-  onClose: () => void;
 }
-const OrderDetailDialog = ({
-  order,
-  isOpen,
-  onClose,
-}: OrderDetailDialogProps) => {
+const OrderDetailDialog = ({ order }: OrderDetailDialogProps) => {
   if (!order) return null;
   return (
-    <div
-      style={{
-        display: isOpen && order ? "block" : "none",
-        border: "1px solid #ccc",
-        padding: "20px",
-      }}
-    >
-      <h3>Order ID: {order.id}</h3>
-      <p>Status: {order.status}</p>
-      <p>Customer: {order.fullName}</p>
-      <p>Total: ${order.totalPrice.toFixed(2)}</p>
-      <button onClick={onClose}>Close</button>
-    </div>
+    <Card className="px-6 mt-4 shadow-lg">
+      <CardTitle className="text-2xl font-bold text-[#A6686A]">
+        Order Detail
+      </CardTitle>
+      <div className="text-gray-700 text-sm">
+        <p className="text-base font-semibold">{order.fullName}</p>
+        <p>Total: BDT {order.totalPrice.toFixed(2)}</p>
+        <h3>Order ID: {order.id}</h3>
+        <p>Status: {order.status}</p>
+      </div>
+    </Card>
   );
 };
 
-// --- Component 4: TrackOrderPage (New Component with Security Improvement) ---
-
 export default function TrackOrderPage() {
   const searchParams = useSearchParams();
-  const urlOrderId = searchParams.get("orderId"); // ADDED: Retrieve email from URL if available (optional)
+  const urlOrderId = searchParams.get("orderId");
   const urlEmail = searchParams.get("email");
 
-  const [orderId, setOrderId] = useState(urlOrderId || ""); // ADDED: State for the email address
+  const [orderId, setOrderId] = useState(urlOrderId || "");
   const [email, setEmail] = useState(urlEmail || "");
   const [order, setOrder] = useState<FirestoreOrder | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // MODIFIED: Function to fetch the order and verify the email
 
   const fetchOrder = async (id: string, customerEmail: string) => {
-    const trimmedEmail = customerEmail.trim().toLowerCase(); // Normalize email
+    const trimmedEmail = customerEmail.trim().toLowerCase();
     if (!id || !trimmedEmail) return;
 
     setLoading(true);
@@ -86,16 +72,14 @@ export default function TrackOrderPage() {
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        const fetchedOrderData = docSnap.data(); // SECURITY CHECK: Verify the email in the document matches the provided email
+        const fetchedOrderData = docSnap.data();
         if (fetchedOrderData.email.toLowerCase() === trimmedEmail) {
           const fetchedOrder = {
             id: docSnap.id,
             ...fetchedOrderData,
           } as FirestoreOrder;
-          setOrder(fetchedOrder); // Automatically open the dialog on successful fetch
-          setIsDialogOpen(true);
+          setOrder(fetchedOrder);
         } else {
-          // IMPORTANT: Use a generic error message to prevent revealing which piece of info was wrong
           setFetchError(`No order found matching the provided ID and Email.`);
         }
       } else {
@@ -109,7 +93,7 @@ export default function TrackOrderPage() {
     } finally {
       setLoading(false);
     }
-  }; // MODIFIED: Effect to fetch order if both ID and Email are in the URL
+  };
 
   useEffect(() => {
     if (urlOrderId && urlEmail) {
@@ -138,7 +122,7 @@ export default function TrackOrderPage() {
           </CardTitle>{" "}
         </CardHeader>
         <CardContent>
-          <p className="mb-4 text-sm text-gray-600">
+          <p className="mb-4 text-sm text-gray-700">
             Please enter your unique Order ID and the Email Address used for the
             order.
           </p>
@@ -148,68 +132,49 @@ export default function TrackOrderPage() {
             <Input
               type="text"
               placeholder="Enter Order ID (e.g., V4XkL8qZ)"
+              className="
+      pl-0 w-full bg-transparent border-0 border-b border-[#A6686A]
+      focus:border-[#7C4A4A] focus:!ring-0 
+      transition-colors duration-200 !rounded-none
+    "
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
               aria-label="Order ID Input"
             />
-            {/* NEW: Email Input */}
             <Input
               type="email"
               placeholder="Enter Email Address"
               value={email}
+              className="
+      pl-0 w-full bg-transparent border-0 border-b border-[#A6686A]
+      focus:border-[#7C4A4A] focus:!ring-0 
+      transition-colors duration-200 !rounded-none
+    "
               onChange={(e) => setEmail(e.target.value)}
               aria-label="Email Address Input"
             />
             {/* Track Button */}
-            <Button
+            <GradientButton
               onClick={handleTrack}
               disabled={
                 loading ||
                 orderId.trim().length === 0 ||
                 email.trim().length === 0
               }
-              className="w-full bg-[#C08387] hover:bg-[#A6686A]"
+              className="w-full mt-4 cursor-pointer"
             >
               {loading ? "Tracking..." : "Track Order"}
-            </Button>
+            </GradientButton>
           </div>
 
           {fetchError && (
-            <p className="mt-4 text-sm text-red-600 font-medium">
-              Error: {fetchError}
-            </p>
-          )}
-          <Separator className="my-6" />
-          {/* Optional: Show last search result summary here */}
-          {order && !isDialogOpen && (
-            <div className="p-3 border rounded-md">
-              <p className="font-semibold text-lg">
-                Order ID:{" "}
-                <span className="font-mono text-sm text-[#A6686A]">
-                  {order.id}
-                </span>
-              </p>
-
-              <p>
-                Status: <span className="font-medium">{order.status}</span>
-              </p>
-
-              <Button
-                variant="link"
-                onClick={() => setIsDialogOpen(true)}
-                className="p-0 h-auto"
-              >
-                View Full Details
-              </Button>
+            <div className="p-2 mt-4 rounded-md bg-red-200">
+              <p className="text-sm text-red-500 font-normal">{fetchError}</p>
             </div>
           )}
         </CardContent>
       </Card>
-      <OrderDetailDialog
-        order={order}
-        isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-      />
+      <OrderDetailDialog order={order} />
     </div>
   );
 }

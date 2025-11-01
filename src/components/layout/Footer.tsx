@@ -51,7 +51,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="w-full bg-white text-gray-700 pt-10 pb-5 px-4 md:px-8 border-t">
+    <footer className="w-full bg-white text-gray-700 pt-10 pb-5 px-4 md:px-8 xl:px-10 border-t">
       <div className="mx-auto flex flex-col md:flex-row gap-4 justify-between">
         {/* Contact Us */}
         <div>
