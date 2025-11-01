@@ -15,20 +15,14 @@ export default function WishlistButton({ product }: WishlistButtonProps) {
   return (
     <button
       onClick={() => toggleWishlist(product)}
-      className={`flex items-center gap-2 px-6 py-3 rounded-lg border-2 transition-all duration-300 ${
-        wishlisted
-          ? "bg-[#A6686A] text-white border-[#A6686A] hover:bg-[#8B5456]"
-          : "bg-white text-gray-700 border-gray-300 hover:border-[#A6686A] hover:text-[#A6686A]"
-      }`}
+      title="Add to Wishlist"
+      className={`border-none p-0 cursor-pointer transition-all duration-300 `}
     >
       <Heart
-        className={`w-5 h-5 transition-all ${
-          wishlisted ? "fill-white" : "fill-none"
+        className={`w-8 h-8 transition-all text-[#A6686A] ${
+          wishlisted ? "fill-[#A6686A]" : "fill-none"
         }`}
       />
-      <span className="font-medium">
-        {wishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-      </span>
     </button>
   );
 }

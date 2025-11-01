@@ -171,7 +171,9 @@ export default function TrackOrderPage() {
   };
 
   const progress =
-    order && order.status ? getProgressInfo(order.status) : { index: 0, percent: 0 };
+    order && order.status
+      ? getProgressInfo(order.status)
+      : { index: 0, percent: 0 };
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6">
@@ -184,49 +186,50 @@ export default function TrackOrderPage() {
           </CardHeader>
           <CardContent>
             <p className="mb-4 text-sm text-gray-700">
-              Please enter your unique Order ID and the Email Address used for the
-              order.
+              Please enter your unique Order ID and the Email Address used for
+              the order.
             </p>
 
             <div className="space-y-4">
               <div>
-              <Input
-                type="text"
-                placeholder="Enter Order ID (e.g., V4XkL8qZ)"
-                className={`pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none`}
-                {...register("orderId", { required: "Order ID is required" })}
-                aria-label="Order ID Input"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSubmit(onSubmit)();
-                }}
-              />
-              {errors.orderId && (
-                <p className="text-red-500 text-sm">{errors.orderId.message}</p>
-              )}
-</div>
+                <Input
+                  type="text"
+                  placeholder="Enter Order ID (e.g., V4XkL8qZ)"
+                  className={`pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none`}
+                  {...register("orderId", { required: "Order ID is required" })}
+                  aria-label="Order ID Input"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSubmit(onSubmit)();
+                  }}
+                />
+                {errors.orderId && (
+                  <p className="text-red-500 text-sm">
+                    {errors.orderId.message}
+                  </p>
+                )}
+              </div>
 
-<div>
-              <Input
-                type="email"
-                placeholder="Enter Email Address"
-                className={`pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none`}
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value:
-                      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                    message: "Invalid email address",
-                  },
-                })}
-                aria-label="Email Address Input"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSubmit(onSubmit)();
-                }}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email.message}</p>
-              )}
-</div>
+              <div>
+                <Input
+                  type="email"
+                  placeholder="Enter Email Address"
+                  className={`pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none`}
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                      message: "Invalid email address",
+                    },
+                  })}
+                  aria-label="Email Address Input"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSubmit(onSubmit)();
+                  }}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-sm">{errors.email.message}</p>
+                )}
+              </div>
 
               <GradientButton
                 type="submit"

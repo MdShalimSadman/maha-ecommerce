@@ -85,12 +85,12 @@ export default function CartSheet() {
                         BDT {(item.sale || item.price).toFixed(2)}
                       </p>
 
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="mt-1 flex items-center gap-2 rounded-full border border-[#A6686A]">
                         <Button
                           size="icon"
                           variant="outline"
                           // 💡 Use item.itemId for decreaseQuantity
-                           className="text-white cursor-pointer bg-[#A6686A] hover:text-[#A6686A] hover:border-[#A6686A]"
+                          className="rounded-full bg-[#A6686A] text-white hover:bg-[#7C4A4A] hover:text-white cursor-pointer"
                           onClick={() => decreaseQuantity(item.itemId)}
                         >
                           -
@@ -99,7 +99,7 @@ export default function CartSheet() {
                         <Button
                           size="icon"
                           variant="outline"
-                          className="text-white cursor-pointer bg-[#A6686A] hover:text-[#A6686A] hover:border-[#A6686A]"
+                          className="rounded-full bg-[#A6686A] text-white hover:bg-[#7C4A4A] hover:text-white cursor-pointer"
                           onClick={() => increaseQuantity(item.itemId)}
                         >
                           +
@@ -108,12 +108,12 @@ export default function CartSheet() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end justify-between !h-full">
-                    <div className="flex-1 !h-full">
+                    {/* <div className="flex-1 !h-full">
                       <p className="font-semibold text-sm">
                         BDT{" "}
                         {((item.sale || item.price) * item.quantity).toFixed(2)}
                       </p>
-                    </div>
+                    </div> */}
                     <button
                       onClick={() => removeFromCart(item.itemId)}
                       className="p-2 cursor-pointer rounded-full hover:bg-red-100 transition"

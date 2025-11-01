@@ -23,20 +23,18 @@ export default function ProductInteraction({ product }: ProductInteractionProps)
       {/* Size Selection */}
       {product.sizes && product.sizes.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-lg font-medium mb-2">Select Size</h3>
+          <h3 className="text-lg font-medium mb-2 text-gray-700">Select Size</h3>
           <div className="flex gap-2 flex-wrap">
             {product.sizes.map((size) => (
               <button
                 key={size}
-                // 2. Add onClick to update the selectedSize state
                 onClick={() => setSelectedSize(size)}
                 className={`
-                  px-4 py-2 border rounded transition 
+                  px-4 py-2 border rounded transition cursor-pointer hover:bg-[#A6686A] hover:text-white
                   ${
-                    // 3. Conditional class for visual selection
                     selectedSize === size
-                      ? 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600'
-                      : 'hover:bg-gray-100 border-gray-300'
+                      ? 'bg-[#A6686A] text-white border-[#A6686A]'
+                      : 'border-[#A6686A] text-[#A6686A]'
                   }
                 `}
               >
@@ -53,7 +51,6 @@ export default function ProductInteraction({ product }: ProductInteractionProps)
 
       {/* Action Buttons */}
       <div className="flex gap-4 items-center">
-        {/* 4. Pass the selectedSize to the AddToCartButton */}
         <AddToCartButton 
           product={product} 
           selectedSize={selectedSize} // Assuming AddToCartButton can accept this prop

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -14,9 +15,21 @@ import { useWishlist } from "@/context/WishlistContext";
 
 const SlidingWishlistSheet = () => {
   const { wishlist, toggleWishlist } = useWishlist();
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Track wishlist length changes
+  const [prevLength, setPrevLength] = useState(wishlist.length);
+
+  useEffect(() => {
+    if (wishlist.length > prevLength) {
+      // A new item was added
+      setIsOpen(true);
+    }
+    setPrevLength(wishlist.length);
+  }, [wishlist.length, prevLength]);
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <div className="relative cursor-pointer">
           <Heart className="text-[#7C4A4A] hover:text-[#A6686A]" />

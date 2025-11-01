@@ -65,13 +65,12 @@ export default function CheckoutPage() {
     try {
       const orderData = {
         ...data,
-        // 🟢 UPDATED: Include selectedSize and itemId in the saved item data
         items: cartItems.map((item) => ({
           _id: item._id,
-          itemId: item.itemId, // Unique ID for tracking
+          itemId: item.itemId, 
           title: item.title,
-          price: item.sale || item.price, // Save final price
-          selectedSize: item.selectedSize, // Save the selected size
+          price: item.sale || item.price, 
+          selectedSize: item.selectedSize, 
           quantity: item.quantity,
         })),
 
