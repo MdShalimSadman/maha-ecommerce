@@ -12,7 +12,7 @@ const categories = [
 ];
 
 const containerVariants: Variants = {
-  hidden: { opacity: 0, x: -80 },
+  hidden: { opacity: 0, x: 80 },
   visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 100, damping: 12 } },
 };
 

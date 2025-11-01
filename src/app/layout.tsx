@@ -6,6 +6,7 @@ import WhatsAppChat from "../components/layout/WhatsAppChat";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import Footer from "@/components/layout/Footer";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -41,6 +42,7 @@ export default function RootLayout({
               <Navbar />
               <WhatsAppChat />
               {children}
+              <Footer/>
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>

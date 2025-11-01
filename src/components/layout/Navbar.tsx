@@ -26,7 +26,7 @@ const Navbar = () => {
   ];
 
   return (
-    <div className="sticky z-50 top-0 w-full bg-white">
+    <nav className="sticky z-50 top-0 w-full bg-white">
       <div className="flex w-full items-center justify-between p-1 px-2 md:px-6 border-b-[0.5px] border-[#7C4A4A]/15">
         <div className="flex-1 hidden md:block">
           <GlobalSearch />
@@ -55,7 +55,7 @@ const Navbar = () => {
         </div>
       </div>
       <SecondaryNav />
-    </div>
+    </nav>
   );
 };
 

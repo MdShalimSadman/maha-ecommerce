@@ -22,7 +22,7 @@ const GradientButton: FC<{
     <Button
       onClick={onClick}
       className={cn(
-        'group relative z-0 overflow-hidden rounded-md bg-gradient-to-r from-[#7C4A4A] to-[#A6686A] text-white transition-all duration-500',
+        'group relative z-0 overflow-hidden rounded-full bg-gradient-to-r from-[#7C4A4A] to-[#A6686A] text-white transition-all duration-500',
         className,
       )}
     >
@@ -35,7 +35,7 @@ const GradientButton: FC<{
         {children}
       </span>
 
-      <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-md">
+      <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
         <span
           className={cn(
             'absolute bottom-0 left-1/2 h-0 w-0 -translate-x-1/2 translate-y-1/2 rounded-full transition-all duration-700 ease-in-out group-hover:h-[500px] group-hover:w-[500px]',
@@ -46,7 +46,7 @@ const GradientButton: FC<{
 
       <span
         className={cn(
-          'pointer-events-none absolute inset-0 rounded-md border opacity-0 transition-opacity duration-500 group-hover:opacity-100',
+          'pointer-events-none absolute inset-0 rounded-full border opacity-0 transition-opacity duration-500 group-hover:opacity-100',
           borderColorClass,
         )}
       />

@@ -81,7 +81,7 @@ export default function CustomerFeedback() {
                     alt={feedback.name}
                     fill
                     priority
-                    className="rounded-full border-4 border-[#EFD8D6] object-cover"
+                    className="rounded-full border-8 border-[#EFD8D6] object-cover"
                   />
                 </div>
 
