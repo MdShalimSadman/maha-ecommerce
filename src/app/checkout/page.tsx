@@ -1,11 +1,8 @@
-// components/checkout/CheckoutPage.tsx (or app/checkout/page.tsx)
-
 "use client";
 
 import { useCart } from "@/context/CartContext";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useRouter } from "next/navigation";
@@ -19,6 +16,8 @@ import emailjs from "@emailjs/browser";
 // Firebase Imports
 import { db } from "@/lib/firebaseClient";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import GradientButton from "@/components/common/GradientButton";
+import Image from "next/image";
 
 interface CheckoutFormData {
   fullName: string;
@@ -67,10 +66,10 @@ export default function CheckoutPage() {
         ...data,
         items: cartItems.map((item) => ({
           _id: item._id,
-          itemId: item.itemId, 
+          itemId: item.itemId,
           title: item.title,
-          price: item.sale || item.price, 
-          selectedSize: item.selectedSize, 
+          price: item.sale || item.price,
+          selectedSize: item.selectedSize,
           quantity: item.quantity,
         })),
 
@@ -91,12 +90,16 @@ export default function CheckoutPage() {
     }
   };
 
-  // Function to send confirmation email to the Customer (logic remains the same as requested)
   const sendCustomerConfirmationEmail = async ({
     orderId,
     email,
     fullName,
     totalPrice,
+  }: {
+    orderId: string;
+    email: string;
+    fullName: string;
+    totalPrice: number;
   }) => {
     if (
       !EMAILJS_SERVICE_ID ||
@@ -215,14 +218,10 @@ export default function CheckoutPage() {
     );
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 p-6 bg-[#FDF7F2] rounded-xl shadow-sm">
-      <h1 className="text-3xl font-semibold text-[#A6686A] mb-6 text-center">
-        Checkout
-      </h1>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <div className="w-full flex flex-col lg:flex-row gap-4 md:gap-6 lf:gap-10 xl:gap-12 rounded-xl mx-auto max-w-6xl p-4 md:p-6 xl:p-12">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1">
         {/* === Personal Info === */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <div>
             <Label className="block text-base font-medium text-[#5e5a57]">
               Full Name
@@ -230,7 +229,7 @@ export default function CheckoutPage() {
             <Input
               {...register("fullName", { required: true })}
               placeholder="Enter your full name"
-              className="mt-1"
+              className={`mt-1 pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none`}
             />
             {errors.fullName && (
               <p className="text-red-500 text-sm mt-1">Full name is required</p>
@@ -246,8 +245,8 @@ export default function CheckoutPage() {
                 required: true,
                 pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
               })}
+              className={`mt-1 pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none`}
               placeholder="Enter your email"
-              className="mt-1"
             />
             {errors.email && (
               <p className="text-red-500 text-sm mt-1">Valid email required</p>
@@ -255,7 +254,7 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <div>
             <Label className="block text-base font-medium text-[#5e5a57]">
               Phone
@@ -263,7 +262,7 @@ export default function CheckoutPage() {
             <Input
               {...register("phone", { required: true })}
               placeholder="Enter your phone number"
-              className="mt-1"
+              className={`mt-1 pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none`}
             />
             {errors.phone && (
               <p className="text-red-500 text-sm mt-1">Phone is required</p>
@@ -277,7 +276,7 @@ export default function CheckoutPage() {
             <Input
               {...register("address", { required: true })}
               placeholder="Enter your delivery address"
-              className="mt-1"
+              className={`mt-1 pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none`}
             />
             {errors.address && (
               <p className="text-red-500 text-sm mt-1">
@@ -295,16 +294,50 @@ export default function CheckoutPage() {
           <RadioGroup defaultValue="cash_on_delivery">
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <RadioGroupItem value="bkash" id="bkash" disabled />
+                <RadioGroupItem
+                  value="bkash"
+                  id="bkash"
+                  disabled
+                  className="border-[#A6686A]"
+                />
+                <Image
+                  src="/images/payment/bkash.png"
+                  height={20}
+                  width={20}
+                  alt="bkash"
+                />
                 <Label htmlFor="bkash" className="text-gray-500">
-                  bKash (Coming soon)
+                  bKash
+                  <span className="-mt-3 bg-gradient-to-r from-[#7C4A4A] to-[#A6686A] text-[10px] text-white p-1 rounded-full">
+                    Coming Soon
+                  </span>
                 </Label>
               </div>
 
               <div className="flex items-center gap-2">
-                <RadioGroupItem value="stripe" id="stripe" disabled />
+                <RadioGroupItem
+                  value="stripe"
+                  id="stripe"
+                  disabled
+                  className="border-[#A6686A]"
+                />
+                <Image
+                  src="/images/payment/visa.png"
+                  height={20}
+                  width={20}
+                  alt="visa"
+                />
+                <Image
+                  src="/images/payment/master-card.png"
+                  height={20}
+                  width={20}
+                  alt="master-card"
+                />
                 <Label htmlFor="stripe" className="text-gray-500">
-                  Visa / Mastercard (Coming soon)
+                  Visa / Mastercard
+                  <span className="-mt-3 bg-gradient-to-r from-[#7C4A4A] to-[#A6686A] text-[10px] text-white p-1 rounded-full">
+                    Coming Soon
+                  </span>
                 </Label>
               </div>
 
@@ -313,6 +346,14 @@ export default function CheckoutPage() {
                   value="cash_on_delivery"
                   id="cash_on_delivery"
                   {...register("paymentMethod")}
+                  className=" 
+             data-[state=checked]:border-[#A6686A] border-[#A6686A]"
+                />
+                 <Image
+                  src="/images/payment/money.png"
+                  height={20}
+                  width={20}
+                  alt="cash"
                 />
                 <Label htmlFor="cash_on_delivery">Cash on Delivery</Label>
               </div>
@@ -320,45 +361,66 @@ export default function CheckoutPage() {
           </RadioGroup>
         </div>
 
-        {/* === Order Summary === */}
-        <div className="border-t border-gray-300 pt-4">
-          <h2 className="text-xl font-semibold mb-3">Order Summary</h2>
+        <GradientButton
+          type="submit"
+          className="w-full cursor-pointer"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Placing Order..." : "Place Order"}
+        </GradientButton>
+      </form>
+      {/* === Order Summary === */}
 
+      <div className="flex-1 h-full bg-[#EFD8D6]/60 rounded-lg p-6">
+        <div>
           {cartItems.map((item) => (
-            <div key={item.itemId} className="flex justify-between text-sm mb-2"> 
+            <div
+              key={item.itemId}
+              className="flex justify-between text-sm mb-2"
+            >
               {/* 💡 Use item.itemId as key for unique cart items (product + size) */}
-              
-              <span className="flex-1">
-                {item.title} 
-                {/* 🟢 NEW: Display Size if available */}
-                {item.selectedSize !== null && (
-                    <span className="text-gray-500 ml-1"> (Size: {item.selectedSize})</span>
-                )}
-                 × {item.quantity}
-              </span>
+
+              <div className="flex-1 flex gap-4 text-gray-700">
+                <div className="relative">
+                  <p className="absolute -top-1 -right-1 z-30 rounded-full h-5 w-5 text-xs flex items-center justify-center bg-[#A6686A] text-white">
+                    {item.quantity}
+                  </p>
+                  {item.imageUrl && (
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.title}
+                      width={50}
+                      height={40}
+                      className="rounded-md"
+                    />
+                  )}
+                </div>
+                <div>
+                  <p>{item.title}</p>
+
+                  {item.selectedSize !== null && (
+                    <p className="text-gray-500"> Size: {item.selectedSize}</p>
+                  )}
+                </div>
+              </div>
 
               {/* Use sale price if available */}
               <span>
-                ${((item.sale || item.price) * item.quantity).toFixed(2)}
+                BDT {((item.sale || item.price) * item.quantity).toFixed(2)}
               </span>
             </div>
           ))}
 
-          <div className="flex justify-between font-semibold mt-3 text-lg">
+          <div className="flex justify-between font-normal mt-9 text-base text-gray-900">
+            <span>Sub Total:</span>
+            <span>BDT {getTotalPrice().toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between font-semibold mt-1 text-lg text-gray-900">
             <span>Total:</span>
-            <span>${getTotalPrice().toFixed(2)}</span>
+            <span>BDT {getTotalPrice().toFixed(2)}</span>
           </div>
         </div>
-
-        {/* === Submit Button === */}
-        <Button
-          type="submit"
-          className="w-full bg-[#A6686A] text-white hover:bg-[#91585A]"
-          disabled={isSubmitting} // Disable button while submitting
-        >
-          {isSubmitting ? "Placing Order..." : "Place Order"}
-        </Button>
-      </form>
+      </div>
     </div>
   );
 }

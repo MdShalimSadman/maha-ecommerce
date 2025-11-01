@@ -54,7 +54,7 @@ export default function CartSheet() {
               {cartItems.map((item) => (
                 <div
                   key={item.itemId}
-                  className="flex justify-between border-b pb-3"
+                  className="flex justify-between border-b mb-2 pb-3"
                 >
                   <div className="flex items-center gap-3">
                     {item.imageUrl && (
