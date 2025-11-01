@@ -28,7 +28,7 @@ const SlidingWishlistSheet = () => {
         </div>
       </SheetTrigger>
 
-      <SheetContent side="right" className="bg-[#FDF7F2] w-[400px]">
+      <SheetContent side="right" className="w-[400px]">
         <SheetHeader>
           <SheetTitle className="text-[#A6686A] text-lg">
             Your Wishlist
@@ -38,13 +38,13 @@ const SlidingWishlistSheet = () => {
         <div className="mt-4 space-y-4 overflow-y-auto max-h-[80vh]">
           {wishlist.length === 0 ? (
             <p className="text-center text-gray-500 mt-6">
-              Your wishlist is empty 💔
+              Your wishlist is empty
             </p>
           ) : (
             wishlist.map((product) => (
               <div
                 key={product._id}
-                className="flex items-center justify-between gap-4 p-2 rounded-lg hover:bg-[#A6686A]/10 transition"
+                className="flex items-center justify-between gap-4 p-4 rounded-lg hover:bg-[#A6686A]/10 transition"
               >
                 <Link
                   href={`/products/${product.slug.current}`}
@@ -60,7 +60,7 @@ const SlidingWishlistSheet = () => {
                   </div>
                   <div>
                     <h3 className="font-medium">{product.title}</h3>
-                    <p className="text-sm text-gray-500">${product.price}</p>
+                    <p className="text-sm text-gray-500">BDT {product.price}</p>
                   </div>
                 </Link>
 
@@ -69,7 +69,7 @@ const SlidingWishlistSheet = () => {
                   className="p-2 rounded-full hover:bg-red-100 transition"
                   title="Remove from wishlist"
                 >
-                  <Trash2 className="text-red-500 w-4 h-4" />
+                  <Trash2 className="text-[#7C4A4A] w-4 h-4" />
                 </button>
               </div>
             ))

@@ -9,12 +9,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Trash2 } from "lucide-react";
 // 💡 We use the updated useCart where CartItem includes selectedSize and itemId
-import { useCart } from "@/context/CartContext"; 
+import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
+import GradientButton from "../common/GradientButton";
 
 export default function CartSheet() {
   const {
@@ -40,94 +41,100 @@ export default function CartSheet() {
         </div>
       </SheetTrigger>
 
-      <SheetContent className="w-[400px] sm:w-[500px] overflow-y-auto bg-white">
+      <SheetContent className="w-[400px]">
         <SheetHeader>
-          <SheetTitle>Your Cart</SheetTitle>
+          <SheetTitle className="text-[#A6686A] text-lg">Your Cart</SheetTitle>
         </SheetHeader>
 
         {cartItems.length === 0 ? (
-          <p className="text-center mt-6 text-gray-500">Your cart is empty</p>
+          <p className="text-center text-gray-500 mt-6">Your cart is empty</p>
         ) : (
-          <div className="mt-6 space-y-4">
-            {cartItems.map((item) => (
-              <div
-                // 💡 Use the unique itemId as the key for reliable rendering
-                key={item.itemId} 
-                className="flex justify-between items-center border-b pb-3"
-              >
-                <div className="flex items-center gap-3">
-                  {item.imageUrl && (
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.title}
-                      width={60}
-                      height={60}
-                      className="rounded-md"
-                    />
-                  )}
-                  <div>
-                    <p className="font-medium text-sm">{item.title}</p>
-                    
-                    {/* 🟢 NEW: Display the Selected Size */}
-                    {item.selectedSize !== null && item.selectedSize !== undefined && (
-                        <p className="text-gray-700 text-xs">
-                           Size: <span className="font-semibold">{item.selectedSize}</span>
-                        </p>
+          <div className="flex flex-col gap-4 p-4 h-full">
+            <div className="flex-1 h-full overflow-y-auto">
+              {cartItems.map((item) => (
+                <div
+                  key={item.itemId}
+                  className="flex justify-between border-b pb-3"
+                >
+                  <div className="flex items-center gap-3">
+                    {item.imageUrl && (
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.title}
+                        width={60}
+                        height={60}
+                        className="rounded-md"
+                      />
                     )}
+                    <div>
+                      <p className="font-medium text-sm">{item.title}</p>
 
-                    {/* Display Price (Use sale price if available, based on CartContext logic) */}
-                    <p className="text-gray-500 text-sm">
-                      ${(item.sale || item.price).toFixed(2)}
-                    </p>
+                      {/* 🟢 NEW: Display the Selected Size */}
+                      {item.selectedSize !== null &&
+                        item.selectedSize !== undefined && (
+                          <p className="text-gray-700 text-xs">
+                            Size:{" "}
+                            <span className="font-semibold">
+                              {item.selectedSize}
+                            </span>
+                          </p>
+                        )}
 
-                    <div className="flex items-center gap-2 mt-1">
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        // 💡 Use item.itemId for decreaseQuantity
-                        onClick={() => decreaseQuantity(item.itemId)} 
-                      >
-                        -
-                      </Button>
-                      <span>{item.quantity}</span>
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        // 💡 Use item.itemId for increaseQuantity
-                        onClick={() => increaseQuantity(item.itemId)} 
-                      >
-                        +
-                      </Button>
+                      {/* Display Price (Use sale price if available, based on CartContext logic) */}
+                      <p className="text-gray-500 text-sm">
+                        BDT {(item.sale || item.price).toFixed(2)}
+                      </p>
+
+                      <div className="flex items-center gap-2 mt-1">
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          // 💡 Use item.itemId for decreaseQuantity
+                           className="text-white cursor-pointer bg-[#A6686A] hover:text-[#A6686A] hover:border-[#A6686A]"
+                          onClick={() => decreaseQuantity(item.itemId)}
+                        >
+                          -
+                        </Button>
+                        <span>{item.quantity}</span>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="text-white cursor-pointer bg-[#A6686A] hover:text-[#A6686A] hover:border-[#A6686A]"
+                          onClick={() => increaseQuantity(item.itemId)}
+                        >
+                          +
+                        </Button>
+                      </div>
                     </div>
                   </div>
+                  <div className="flex flex-col items-end justify-between !h-full">
+                    <div className="flex-1 !h-full">
+                      <p className="font-semibold text-sm">
+                        BDT{" "}
+                        {((item.sale || item.price) * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(item.itemId)}
+                      className="p-2 cursor-pointer rounded-full hover:bg-red-100 transition"
+                    >
+                      <Trash2 className="text-[#7C4A4A] w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex flex-col items-end">
-                  <p className="font-semibold text-sm">
-                    {/* Calculation uses sale price if present (assuming getTotalPrice does this) */}
-                    ${((item.sale || item.price) * item.quantity).toFixed(2)}
-                  </p>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    // 💡 Use item.itemId for removeFromCart
-                    onClick={() => removeFromCart(item.itemId)} 
-                    className="text-xs mt-1"
-                  >
-                    Remove
-                  </Button>
-                </div>
-              </div>
-            ))}
-
+              ))}
+            </div>
             <div className="border-t pt-4">
-              <div className="flex justify-between font-semibold text-lg">
+              <div className="flex justify-between font-semibold text-lg text-gray-700">
                 <span>Total:</span>
-                <span>${getTotalPrice().toFixed(2)}</span>
+                <span>BDT {getTotalPrice().toFixed(2)}</span>
               </div>
-              <Link href="/checkout" onClick={() => setIsCartOpen(false)}> {/* Close cart on navigation */}
-                <Button className="w-full mt-4 bg-[#A6686A] text-white hover:bg-[#91585A]">
+              <Link href="/checkout" onClick={() => setIsCartOpen(false)}>
+                {" "}
+                {/* Close cart on navigation */}
+                <GradientButton className="w-full mt-4 cursor-pointer">
                   Checkout
-                </Button>
+                </GradientButton>
               </Link>
             </div>
           </div>

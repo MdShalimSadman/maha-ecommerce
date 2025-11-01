@@ -211,7 +211,7 @@ export default function CheckoutPage() {
   if (cartItems.length === 0)
     return (
       <p className="text-center mt-10 text-lg">
-        Your cart is empty 🛒 <br /> Please add items before checking out.
+        Your cart is empty <br /> Please add items before checking out.
       </p>
     );
 
