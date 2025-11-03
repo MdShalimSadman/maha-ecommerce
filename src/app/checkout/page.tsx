@@ -298,7 +298,7 @@ export default function CheckoutPage() {
                   value="bkash"
                   id="bkash"
                   disabled
-                  className="border-[#A6686A]"
+                  className="border-[#A6686A]/50"
                 />
                 <Image
                   src="/images/payment/bkash.png"
@@ -319,7 +319,7 @@ export default function CheckoutPage() {
                   value="stripe"
                   id="stripe"
                   disabled
-                  className="border-[#A6686A]"
+                  className="border-[#A6686A]/50"
                 />
                 <Image
                   src="/images/payment/visa.png"
@@ -349,7 +349,7 @@ export default function CheckoutPage() {
                   className=" 
              data-[state=checked]:border-[#A6686A] border-[#A6686A]"
                 />
-                 <Image
+                <Image
                   src="/images/payment/money.png"
                   height={20}
                   width={20}

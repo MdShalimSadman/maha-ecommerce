@@ -1,9 +1,9 @@
-'use client'; // Required for client-side functionality (state, hooks, Firebase Auth)
+'use client'; 
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebaseClient'; // Import your client-side auth instance (assuming this path)
+import { auth } from '@/lib/firebaseClient'; 
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -25,23 +25,16 @@ export default function LoginPage() {
     }
 
     try {
-      // 1. Sign in with Firebase client-side SDK
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
-      // 2. Get the Firebase ID Token
       const idToken = await user.getIdToken();
       
-      // 3. Send the ID Token to your Next.js API route
-      //    This triggers the server to set the secure HTTP-only cookie
       await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
       });
 
-      // 4. Redirect the user to the protected page
-      //    The Middleware will now see the cookie and grant access
       router.push('/dashboard');
 
     } catch (err) {
@@ -62,14 +55,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+   <div className="max-w-xl mx-auto mt-10 p-6">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl">
         <h2 className="text-3xl font-bold text-center text-gray-900">
           Sign In to Dashboard
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email Input */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email Address

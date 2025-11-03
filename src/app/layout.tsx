@@ -7,6 +7,7 @@ import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import Footer from "@/components/layout/Footer";
+import { Toaster } from "@/components/ui/sonner";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -39,10 +40,11 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
+              <Toaster />
               <Navbar />
               <WhatsAppChat />
               {children}
-              <Footer/>
+              <Footer />
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>
