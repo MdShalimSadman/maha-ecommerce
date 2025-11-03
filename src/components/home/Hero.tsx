@@ -15,7 +15,7 @@ import Link from "next/link";
 const slides = [
   {
     image: "/images/hero/third-image.jpg",
-    title: "Your first step towards modesty",
+    title: "Your First Step Towards Modesty",
     subtitle: "Discover the latest trends",
     url:"/new-in"
   },
