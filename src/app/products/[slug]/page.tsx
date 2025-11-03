@@ -67,7 +67,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             )}
           </div>
         ) : (
-          <p className="text-2xl font-bold mb-4">${product.price}</p>
+          <p className="text-2xl font-bold mb-4">BDT {product.price}</p>
         )}
 
         {/* Description */}
