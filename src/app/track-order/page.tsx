@@ -195,7 +195,7 @@ export default function TrackOrderPage() {
                 <Input
                   type="text"
                   placeholder="Enter Order ID (e.g., V4XkL8qZ)"
-                  className={`pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none`}
+                  className="pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none"
                   {...register("orderId", { required: "Order ID is required" })}
                   aria-label="Order ID Input"
                   onKeyDown={(e) => {
@@ -213,7 +213,7 @@ export default function TrackOrderPage() {
                 <Input
                   type="email"
                   placeholder="Enter Email Address"
-                  className={`pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none`}
+                   className="pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none"
                   {...register("email", {
                     required: "Email is required",
                     pattern: {
