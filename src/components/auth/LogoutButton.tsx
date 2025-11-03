@@ -1,34 +1,54 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext'; // Import the custom hook
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { CircleUser, LogOut, Key } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-export default function LogoutButton() {
+export default function LogoutDropdown() {
   const { currentUser, handleLogout, loading } = useAuth();
   const router = useRouter();
 
-  if (loading) {
-    // Optionally return null or a skeleton during the loading check
-    return null; 
-  }
+  if (loading || !currentUser) return null;
 
-  // Hide the button if the user is NOT logged in
-  if (!currentUser) {
-    return null;
-  }
-  
   const onClickLogout = async () => {
-      await handleLogout();
-      // Redirect to login or home after successful logout
-      router.push('/login'); 
-  }
+    await handleLogout();
+    router.push("/login");
+  };
+
+  const onClickResetPassword = () => {
+    router.push("/dashboard/reset-password");
+  };
 
   return (
-    <button
-      onClick={onClickLogout}
-      className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition font-medium"
-    >
-      Logout ({currentUser.email})
-    </button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div className="flex gap-2 border rounded-full border-[#7C4A4A] px-2 py-1 items-center justify-center cursor-pointer">
+          <CircleUser className="text-[#7C4A4A]" size={30} />
+          <div>
+            <p className="truncate text-[#7C4A4A] font-medium text-base max-w-full md:max-w-32">
+              {currentUser.email}
+            </p>
+            <p className="text-xs font-normal text-gray-600">Admin</p>
+          </div>
+        </div>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem onClick={onClickResetPassword} className="hover:!border-none hover:!bg-transparent font-semibold cursor-pointer text-[#7C4A4A] hover:!text-[#A6686A]">
+          <Key className="mr-2 h-4 w-4 text-[#7C4A4A]" />
+          Reset Password
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onClickLogout} className="hover:!border-none hover:!bg-transparent font-semibold cursor-pointer text-[#7C4A4A] hover:!text-[#A6686A]">
+          <LogOut className="mr-2 h-4 w-4 text-[#7C4A4A]" />
+          Logout
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

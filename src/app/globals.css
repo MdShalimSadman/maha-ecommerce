@@ -74,6 +74,8 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --font-heading: var(--font-playfair);
+  --font-body: var(--font-poppins);
 }
 
 .dark {
@@ -119,3 +121,40 @@
   }
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), serif;
+}
+
+body, p, span, a, button, input {
+  font-family: var(--font-body), sans-serif;
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background:#A6686A;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #A6686A;
+  border-radius: 4px;
+}
+
+::-moz-selection {
+  /* Code for Firefox */
+  color: white;
+  background: #A6686A;
+}
+
+::selection {
+  color: white;
+  background: #A6686A;
+}

@@ -1,9 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// 1. IMPORT getAuth HERE
+
 import { getAuth } from "firebase/auth";
 import { deleteDoc, doc, getFirestore, updateDoc } from "firebase/firestore";
-
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,27 +13,23 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// 2. INITIALIZE and EXPORT Auth
-export const auth = getAuth(app); // <-- Add this line
+export const auth = getAuth(app);
 
-// Initialize and Export Firestore
 export const db = getFirestore(app);
 
-// Initialize Analytics (optional)
-// const analytics = getAnalytics(app); 
-
-// Export Firestore utility functions
-export const updateOrderStatus = async (orderId, newStatus) => {
-    const orderRef = doc(db, "orders", orderId);
-    await updateDoc(orderRef, {
-        status: newStatus,
-    });
+export const updateOrderStatus = async (
+  orderId: string,
+  newStatus: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled"
+) => {
+  const orderRef = doc(db, "orders", orderId);
+  await updateDoc(orderRef, {
+    status: newStatus,
+  });
 };
 
-export const deleteOrder = async (orderId) => {
-    const orderRef = doc(db, "orders", orderId);
-    await deleteDoc(orderRef);
+export const deleteOrder = async (orderId: string) => {
+  const orderRef = doc(db, "orders", orderId);
+  await deleteDoc(orderRef);
 };

@@ -1,6 +1,6 @@
 'use client'; 
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebaseClient'; // Your client-side auth instance
 
@@ -25,15 +25,18 @@ export const useAuth = () => {
 // Logout handler function (now inside the provider)
 const apiLogout = () => fetch('/api/logout', { method: 'POST' });
 
-export const AuthProvider = ({ children }) => {
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Unified Logout Logic
   const handleLogout = async () => {
     try {
-      await signOut(auth); // 1. Client-side sign out
-      await apiLogout();    // 2. Server-side cookie removal
+      await signOut(auth); 
+      await apiLogout();  
     } catch (error) {
       console.error('Logout failed:', error);
     }

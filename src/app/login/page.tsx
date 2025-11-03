@@ -1,135 +1,177 @@
-'use client'; // Required for client-side functionality (state, hooks, Firebase Auth)
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebaseClient'; // Import your client-side auth instance (assuming this path)
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebaseClient";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import GradientButton from "@/components/common/GradientButton";
+import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>();
+
+  const onSubmit = async (data: LoginFormData) => {
+    const { email, password } = data;
     setError(null);
     setLoading(true);
 
-    if (!email || !password) {
-      setError("Please enter both email and password.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      // 1. Sign in with Firebase client-side SDK
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
-
-      // 2. Get the Firebase ID Token
       const idToken = await user.getIdToken();
-      
-      // 3. Send the ID Token to your Next.js API route
-      //    This triggers the server to set the secure HTTP-only cookie
-      await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+
+      await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),
       });
+      toast.success("Login successful");
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      let errorMessage = "An unexpected error occurred.";
 
-      // 4. Redirect the user to the protected page
-      //    The Middleware will now see the cookie and grant access
-      router.push('/dashboard');
-
-    } catch (err) {
-      console.error('Login Error:', err);
-      let errorMessage = 'An unexpected error occurred.';
-      
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found') {
-        errorMessage = 'Invalid email or password.';
-      } else if (err.code === 'auth/wrong-password') {
-        errorMessage = 'Invalid password.';
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        typeof err.code === "string" 
+      ) {
+        if (
+          err.code === "auth/invalid-credential" ||
+          err.code === "auth/user-not-found"
+        ) {
+          errorMessage = "Invalid email or password.";
+          toast.error("Invalid email or password.");
+        } else if (err.code === "auth/wrong-password") {
+          errorMessage = "Invalid password.";
+          toast.error("Invalid password");
+        } else {
+          toast.error("Something went wrong!");
+        }
       }
 
       setError(errorMessage);
-
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl">
-        <h2 className="text-3xl font-bold text-center text-gray-900">
-          Sign In to Dashboard
-        </h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email Input */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email Address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
+    <div className="max-w-xl mx-auto mt-10 p-6">
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-[#A6686A]">
+            Sign In to Dashboard
+          </CardTitle>
+        </CardHeader>
 
-          {/* Password Input */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="p-3 text-sm font-medium text-red-700 bg-red-100 rounded-lg">
-              {error}
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Email */}
+            <div>
+              <Input
+                id="email"
+                placeholder="Enter your email"
+                type="email"
+                autoComplete="email"
+                className="pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none"
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Enter a valid email address",
+                  },
+                })}
+              />
+              {errors.email && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
-          )}
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-2 px-4 border border-transparent rounded-lg text-white font-semibold shadow-md transition duration-300 
-              ${loading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'}`}
-          >
-            {loading ? 'Logging In...' : 'Log In'}
-          </button>
-        </form>
-        
-        {/* Signup Link */}
-        <div className="text-sm text-center">
-          <p className="text-gray-600">
-            Don&apos;t have an account? 
-            <a href="/signup" className="ml-1 font-medium text-indigo-600 hover:text-indigo-500">
-              Sign Up
-            </a>
-          </p>
-        </div>
-      </div>
+            {/* Password */}
+            <div className="relative">
+              <Input
+                id="password"
+                placeholder="Enter your password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                className="pl-0 pr-10 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none"
+                {...register("password", {
+                  required: "Password is required",
+                })}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A6686A] hover:text-[#7C4A4A] cursor-pointer"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
+
+              {errors.password && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 text-sm font-medium text-red-700 bg-red-100 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <GradientButton
+              type="submit"
+              disabled={loading}
+              className="w-full mt-4 cursor-pointer"
+            >
+              {loading ? "Logging In..." : "Log In"}
+            </GradientButton>
+          </form>
+
+          {/* Forgot Password */}
+          <div className="text-sm mt-4">
+            <Link
+              href="/forgot-password"
+              className="font-medium text-[#A6686A] hover:text-[#7C4A4A]"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
