@@ -28,10 +28,10 @@ export default async function NewInPage() {
   const products = await getNewInProducts();
 
   return (
-    <section className="mt-2 flex flex-col justify-center py-6 px-8">
+    <section className="mt-2 flex flex-col justify-center py-6 px-2 md:px-8">
       <AnimatedHeading text="NEW IN" isSlash={false} />
       {products.length > 0 ? (
-        <div className="mt-2 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-2 grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4">
           {products.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}
