@@ -76,8 +76,9 @@ const OrderDetailDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto text-gray-600">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-[#A6686A] flex items-end gap-2">
-            Order Details:
+          <DialogTitle className="text-2xl text-[#A6686A] flex flex-col md:flex-row md:items-end gap-2 !text-start">
+            <p>Order Details:</p>
+            <div>
             <span className="font-mono text-sm truncate">{order.id}</span>
             <button
               onClick={handleCopyOrderId}
@@ -90,8 +91,9 @@ const OrderDetailDialog = ({
                 <Copy className="w-4 h-4" />
               )}
             </button>
+            </div>
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="!text-start">
             Detailed information for order placed on{" "}
             {order.orderDate.toDate().toLocaleDateString()} at{" "}
             {order.orderDate.toDate().toLocaleTimeString()}.
@@ -101,7 +103,7 @@ const OrderDetailDialog = ({
         <Separator className="my-4" />
 
         {/* Status and Total */}
-        <div className="flex justify-between items-center mb-4 p-3 bg-[#A6686A]/5 rounded-lg border">
+        <div className="flex flex-col md:flex-row gap-2 justify-between md:items-center mb-4 p-3 bg-[#A6686A]/5 rounded-lg border">
           <div className="text-lg font-normal">
             Status:{" "}
             <Badge
@@ -114,31 +116,36 @@ const OrderDetailDialog = ({
               {order.status}
             </Badge>
           </div>
-          <div className="text-xl font-semibold text-right text-[#7C4A4A]">
+          <div className="text-xl font-semibold md:text-right text-[#7C4A4A]">
             Total Price: BDT {order.totalPrice.toFixed(2)}
           </div>
         </div>
 
         {/* Customer Info */}
         <h3 className="text-lg font-semibold mb-2">Customer Information</h3>
-        <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-          <div>
-            <span className="font-medium">Full Name:</span> {order.fullName}
-          </div>
-          <div>
-            <span className="font-medium">Email:</span> {order.email}
-          </div>
-          <div>
-            <span className="font-medium">Phone:</span> {order.phone}
-          </div>
-          <div>
-            <span className="font-medium">Payment Method:</span>{" "}
-            {order.paymentMethod}
-          </div>
-          <div className="col-span-2">
-            <span className="font-medium">Address:</span> {order.address}
-          </div>
-        </div>
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
+  <div className="flex flex-col sm:flex-row sm:items-center">
+    <span className="font-medium sm:mr-2">Full Name:</span>
+    <span className="truncate">{order.fullName}</span>
+  </div>
+  <div className="flex flex-col sm:flex-row sm:items-center">
+    <span className="font-medium sm:mr-2">Email:</span>
+    <span className="truncate">{order.email}</span>
+  </div>
+  <div className="flex flex-col sm:flex-row sm:items-center">
+    <span className="font-medium sm:mr-2">Phone:</span>
+    <span>{order.phone}</span>
+  </div>
+  <div className="flex flex-col sm:flex-row sm:items-center">
+    <span className="font-medium sm:mr-2">Payment Method:</span>
+    <span>{order.paymentMethod}</span>
+  </div>
+  <div className="flex flex-col sm:flex-row sm:items-start col-span-1 sm:col-span-2">
+    <span className="font-medium sm:mr-2">Address:</span>
+    <span>{order.address}</span>
+  </div>
+</div>
+
 
         <Separator className="my-4" />
 
@@ -163,10 +170,10 @@ const OrderDetailDialog = ({
                 </TableCell>
                 <TableCell className="text-right">{item.quantity}</TableCell>
                 <TableCell className="text-right">
-                  ${item.price.toFixed(2)}
+                  BDT {item.price.toFixed(2)}
                 </TableCell>
                 <TableCell className="text-right font-semibold">
-                  ${(item.price * item.quantity).toFixed(2)}
+                  BDT {(item.price * item.quantity).toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}
