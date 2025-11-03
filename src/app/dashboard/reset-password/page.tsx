@@ -1,170 +1,222 @@
-'use client'; 
+"use client";
 
-import React, { useState } from 'react';
-import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
-import { auth } from '@/lib/firebaseClient'; // Your client-side auth instance
-import { useRouter } from 'next/navigation';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import {
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  AuthError,
+} from "firebase/auth";
+import { auth } from "@/lib/firebaseClient";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import GradientButton from "@/components/common/GradientButton";
+import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+import Link from "next/link";
+
+interface ResetPasswordFormData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
 
 export default function ResetPasswordPage() {
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  
-  // Get the current user object
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const user = auth.currentUser;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ResetPasswordFormData>();
+
+  const onSubmit = async (data: ResetPasswordFormData) => {
+    const { currentPassword, newPassword, confirmPassword } = data;
 
     if (!user) {
-      setError("You must be logged in to change your password.");
-      setLoading(false);
-      router.push('/login');
+      toast.error("You must be logged in to change your password.");
+      router.push("/login");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError("New password and confirmation password do not match.");
-      setLoading(false);
+      toast.error("New password and confirmation do not match.");
       return;
     }
 
     if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters long.");
-      setLoading(false);
+      toast.error("Password must be at least 6 characters long.");
       return;
     }
 
+    setLoading(true);
+
     try {
-      // 1. Re-authenticate the user for security
-      // Firebase requires recent login or re-authentication before sensitive operations.
-      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      const credential = EmailAuthProvider.credential(
+        user.email!,
+        currentPassword
+      );
       await reauthenticateWithCredential(user, credential);
-      
-      // 2. Update the password
       await updatePassword(user, newPassword);
 
-      setSuccess("Password successfully updated!");
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      
+      toast.success("Password successfully updated!");
+      router.push("/dashboard");
+      reset();
     } catch (err) {
-      console.error('Password Reset Error:', err.code, err.message);
-      
-      let errorMessage = "Failed to update password. Please try again.";
-      if (err.code === 'auth/wrong-password') {
-        errorMessage = "Incorrect current password. Please try again.";
-      } else if (err.code === 'auth/requires-recent-login') {
-        // This usually means the user logged in too long ago; re-authentication handles this.
-        errorMessage = "Please log out and log back in, then try again.";
-      } else if (err.code === 'auth/weak-password') {
-        errorMessage = "Password is too weak. Choose a stronger one.";
+      const error = err as AuthError;
+
+      switch (error.code) {
+        case "auth/wrong-password":
+          toast.error("Incorrect current password.");
+          break;
+        case "auth/requires-recent-login":
+          toast.error(
+            "Please log out and log in again to update your password."
+          );
+          break;
+        case "auth/weak-password":
+          toast.error("Password is too weak. Choose a stronger one.");
+          break;
+        default:
+          toast.error("Failed to update password. Please try again.");
+          break;
       }
-
-      setError(errorMessage);
-
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-lg p-8 space-y-6 bg-white rounded-xl shadow-2xl">
-        <h2 className="text-3xl font-bold text-center text-gray-900">
-          Change Password
-        </h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {/* Current Password Input (Required for re-authentication) */}
-          <div>
-            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
-              Current Password
-            </label>
-            <input
-              id="currentPassword"
-              name="currentPassword"
-              type="password"
-              required
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
+    <div className="max-w-xl mx-auto mt-10 p-6">
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-[#A6686A]">
+            Change Password
+          </CardTitle>
+        </CardHeader>
 
-          {/* New Password Input */}
-          <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
-              New Password (min 6 characters)
-            </label>
-            <input
-              id="newPassword"
-              name="newPassword"
-              type="password"
-              required
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-
-          {/* Confirm Password Input */}
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-              Confirm New Password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-
-          {/* Status Messages */}
-          {error && (
-            <div className="p-3 text-sm font-medium text-red-700 bg-red-100 rounded-lg">
-              {error}
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Current Password */}
+            <div className="relative">
+              <Input
+                id="currentPassword"
+                type={showCurrent ? "text" : "password"}
+                placeholder="Current Password"
+                className="pl-0 pr-10 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none"
+                {...register("currentPassword", {
+                  required: "Current password is required",
+                })}
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrent((prev) => !prev)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A6686A] hover:text-[#7C4A4A] cursor-pointer"
+              >
+                {showCurrent ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
+              {errors.currentPassword && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.currentPassword.message}
+                </p>
+              )}
             </div>
-          )}
-          {success && (
-            <div className="p-3 text-sm font-medium text-green-700 bg-green-100 rounded-lg">
-              {success}
-            </div>
-          )}
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-2 px-4 border border-transparent rounded-lg text-white font-semibold shadow-md transition duration-300 
-              ${loading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'}`}
-          >
-            {loading ? 'Processing...' : 'Change Password'}
-          </button>
-        </form>
-        
-        <div className="text-center">
-            <button 
-                onClick={() => router.back()}
-                className="text-sm text-indigo-600 hover:text-indigo-500"
+            {/* New Password */}
+            <div className="relative">
+              <Input
+                id="newPassword"
+                type={showNew ? "text" : "password"}
+                placeholder="New Password"
+                className="pl-0 pr-10 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none"
+                {...register("newPassword", {
+                  required: "New password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
+                })}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNew((prev) => !prev)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A6686A] hover:text-[#7C4A4A] cursor-pointer"
+              >
+                {showNew ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
+              {errors.newPassword && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.newPassword.message}
+                </p>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showConfirm ? "text" : "password"}
+                placeholder="Confirm New Password"
+                className="pl-0 pr-10 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none"
+                {...register("confirmPassword", {
+                  required: "Please confirm your new password",
+                })}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm((prev) => !prev)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A6686A] hover:text-[#7C4A4A] cursor-pointer"
+              >
+                {showConfirm ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
+              {errors.confirmPassword && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <GradientButton
+              type="submit"
+              disabled={loading}
+              className="w-full mt-4"
             >
-                ← Back to Profile
-            </button>
-        </div>
-      </div>
+              {loading ? "Processing..." : "Change Password"}
+            </GradientButton>
+          </form>
+
+          <div className="mt-4">
+            <Link
+              href="/dashboard"
+              className="text-sm text-[#A6686A] hover:text-[#7C4A4A] cursor-pointer"
+            >
+              ← Back to Dashboard
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
