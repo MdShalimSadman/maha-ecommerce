@@ -1,108 +1,149 @@
-'use client'; 
+"use client";
 
-import React, { useState } from 'react';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '@/lib/firebaseClient'; // Your client-side auth instance (check your path)
-import { useRouter } from 'next/navigation';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "@/lib/firebaseClient";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import GradientButton from "@/components/common/GradientButton";
+import Link from "next/link";
+import { toast } from "sonner";
+
+interface ForgotPasswordFormData {
+  email: string;
+}
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ForgotPasswordFormData>();
+
+  const onSubmit = async (data: ForgotPasswordFormData) => {
     setError(null);
-    setSuccess(null);
+    setSuccessMessage(null);
     setLoading(true);
 
-    if (!email) {
-      setError("Please enter your email address.");
-      setLoading(false);
-      return;
-    }
-    
     try {
-      // Send the password reset email using Firebase Auth
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(auth, data.email);
 
-      // Important: We show a generic success message even if the email wasn't found 
-      // This prevents attackers from knowing which emails are registered.
-      setSuccess("If that email is registered, a password reset link has been sent to your inbox. Please check your spam folder also.");
-      setEmail(''); // Clear the input
+      const message =
+        "If that email is registered, a reset link has been sent to your inbox. Check your spam folder too.";
 
-    } catch (err) {
-      console.error('Forgot Password Error:', err);
-      // For security, you might want to show the generic success message here too.
-      // However, if you need debugging info:
-      setError('Failed to process your request. Please try again.'); 
+      toast.success(message);
+      setSuccessMessage(message);
 
+      // Disable button for 60 seconds
+      setIsButtonDisabled(true);
+      setTimeout(() => {
+        setIsButtonDisabled(false);
+      }, 60000); // 60 seconds
+
+      reset();
+    } catch (err: unknown) {
+      console.error("Forgot Password Error:", err);
+
+      let errorMessage = "Failed to send password reset link. Please try again.";
+
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        typeof err.code === "string"
+      ) {
+        if (err.code === "auth/user-not-found") {
+          errorMessage =
+            "If that email is registered, a reset link has been sent to your inbox.";
+        } else {
+          errorMessage = "Something went wrong. Please try again.";
+        }
+      }
+
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl">
-        <h2 className="text-3xl font-bold text-center text-gray-900">
-          Reset Your Password
-        </h2>
-        <p className="text-center text-gray-600 text-sm">
+    <div className="max-w-xl mx-auto mt-10 p-6">
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-[#A6686A]">
+            Reset Your Password
+          </CardTitle>
+          <p className="text-gray-700 text-sm">
             Enter the email address you use to sign in.
-        </p>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {/* Email Input */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email Address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            />
+          </p>
+        </CardHeader>
+
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Email */}
+            <div>
+              <Input
+                id="email"
+                placeholder="Enter your email"
+                type="email"
+                autoComplete="email"
+                className="pl-0 w-full bg-transparent border-0 border-b border-[#A6686A] focus:border-[#7C4A4A] focus:!ring-0 transition-colors duration-200 !rounded-none"
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Enter a valid email address",
+                  },
+                })}
+              />
+              {errors.email && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.email.message}
+                </p>
+              )}
+              {successMessage && (
+                <p className="text-sm bg-green-100 rounded-md p-3 mt-3 text-green-600 font-medium">
+                  {successMessage}
+                </p>
+              )}
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 text-sm font-medium text-red-700 bg-red-100 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <GradientButton
+              type="submit"
+              disabled={loading || isButtonDisabled}
+              className="w-full mt-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Sending Request..." : "Send Reset Link"}
+            </GradientButton>
+          </form>
+
+          {/* Back to Login */}
+          <div className="text-sm  mt-4">
+            <Link
+              href="/login"
+              className="font-medium text-[#A6686A] hover:text-[#7C4A4A]"
+            >
+              ← Back to Login
+            </Link>
           </div>
-
-          {/* Status Messages */}
-          {error && (
-            <div className="p-3 text-sm font-medium text-red-700 bg-red-100 rounded-lg">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="p-3 text-sm font-medium text-green-700 bg-green-100 rounded-lg">
-              {success}
-            </div>
-          )}
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-2 px-4 border border-transparent rounded-lg text-white font-semibold shadow-md transition duration-300 
-              ${loading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'}`}
-          >
-            {loading ? 'Sending Request...' : 'Send Reset Link'}
-          </button>
-        </form>
-        
-        {/* Back to Login Link */}
-        <div className="text-sm text-center">
-          <a href="/login" className="ml-1 font-medium text-indigo-600 hover:text-indigo-500">
-            ← Back to Login
-          </a>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

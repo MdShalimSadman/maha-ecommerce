@@ -63,7 +63,7 @@ export default function ThankYouPage() {
               <p className="font-semibold text-sm mb-1">Your Order ID:</p>
               <div className=" p-2 bg-[#A6686A]/10 border border-[#A6686A] rounded-lg">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-lg truncate font-mono text-gray-600 break-all">
+                  <p className="text-xs md:text-sm lg:text-base xl:text-lg truncate font-mono text-gray-600 break-all">
                     {orderId}
                   </p>
                   <button

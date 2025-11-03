@@ -53,7 +53,6 @@ export default function LoginPage() {
     } catch (err: unknown) {
       let errorMessage = "An unexpected error occurred.";
 
-      // You'll need to use a type guard to safely check the error code
       if (
         typeof err === "object" &&
         err !== null &&
@@ -163,7 +162,7 @@ export default function LoginPage() {
           </form>
 
           {/* Forgot Password */}
-          <div className="text-sm text-center mt-4">
+          <div className="text-sm mt-4">
             <Link
               href="/forgot-password"
               className="font-medium text-[#A6686A] hover:text-[#7C4A4A]"
