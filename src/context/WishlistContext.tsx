@@ -1,7 +1,14 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import type { Product } from "@/types/types";
+import { toast } from "sonner";
 
 interface WishlistContextType {
   wishlist: Product[];
@@ -9,7 +16,9 @@ interface WishlistContextType {
   isWishlisted: (productId: string) => boolean;
 }
 
-const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
+const WishlistContext = createContext<WishlistContextType | undefined>(
+  undefined
+);
 
 export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [wishlist, setWishlist] = useState<Product[]>([]);
@@ -43,13 +52,16 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
       }
       return [...prev, product];
     });
+    toast.success("Added to wishlist");
   };
 
   const isWishlisted = (productId: string) =>
     wishlist.some((p) => p._id === productId);
 
   return (
-    <WishlistContext.Provider value={{ wishlist, toggleWishlist, isWishlisted }}>
+    <WishlistContext.Provider
+      value={{ wishlist, toggleWishlist, isWishlisted }}
+    >
       {children}
     </WishlistContext.Provider>
   );

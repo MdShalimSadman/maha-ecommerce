@@ -12,9 +12,7 @@ interface ProductInteractionProps {
 }
 
 export default function ProductInteraction({ product }: ProductInteractionProps) {
-  // 1. State to track the selected size
   const [selectedSize, setSelectedSize] = useState<number | null>(
-    // Set initial state to the first size, if available
     product.sizes?.length ? product.sizes[0] : null
   );
 

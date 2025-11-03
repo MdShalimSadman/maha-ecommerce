@@ -2,6 +2,7 @@ import { groq } from "next-sanity";
 import { client } from "@/lib/sanity.client";
 import ProductCard from "@/components/product/ProductCard";
 import type { Product } from "@/types/types";
+import AnimatedHeading from "@/components/common/AnimatedHeading";
 
 // Fetch only products that have a sale value
 const query = groq`
@@ -31,12 +32,9 @@ export default async function SalePage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl p-6">
-      <h1 className="mb-10 text-4xl font-bold text-center text-primary">
-        Sale Products
-      </h1>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 ">
+    <div className="mt-2 flex flex-col justify-center py-6 px-8">
+       <AnimatedHeading text="SALE" isSlash={false} /> 
+      <div className="mt-2 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 ">
         {products.map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}

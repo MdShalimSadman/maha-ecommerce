@@ -145,7 +145,6 @@ export default function TrackOrderPage() {
     await fetchOrder(data.orderId.trim(), data.email.trim());
   };
 
-  // Progress bar config
   const sections = [
     { id: "1", title: "Pending", iconColor: "#FBBF24" },
     { id: "2", title: "Processing", iconColor: "#60A5FA" },
