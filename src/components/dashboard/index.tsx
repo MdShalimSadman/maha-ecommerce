@@ -18,8 +18,9 @@ import OrderAnalysisChart from "./OrderAnalysisChart";
 import OrderDetailDialog from "./OrderDetailDialog";
 import OrdersTable from "./OrdersTable";
 
-import { toast } from "sonner"
+import { toast } from "sonner";
 import { Input } from "../ui/input";
+import ConfirmDialog from "./ConfirmDialog";
 
 export interface OrderItem {
   _id: string;
@@ -46,9 +47,14 @@ export default function OrdersIndex() {
   const [orders, setOrders] = useState<FirestoreOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedOrder, setSelectedOrder] = useState<FirestoreOrder | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<FirestoreOrder | null>(
+    null
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
 
   const handleViewDetails = (order: FirestoreOrder) => {
     setSelectedOrder(order);
@@ -59,35 +65,14 @@ export default function OrdersIndex() {
     setSelectedOrder(null);
   };
 
-  useEffect(() => {
-    if (!db) {
-      setError("Firebase not initialized.");
-      setLoading(false);
-      return;
-    }
-    setError(null);
-    setLoading(true);
-
-    const ordersCollectionRef = collection(db, "orders");
-    const q = query(ordersCollectionRef, orderBy("orderDate", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedOrders = snapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() } as FirestoreOrder)
-      );
-      setOrders(fetchedOrders);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
   const filteredOrders = useMemo(() => {
     if (!searchTerm) return orders;
-    return orders.filter(order =>
-      order.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.phone.includes(searchTerm) ||
-      order.id.toLowerCase().includes(searchTerm.toLowerCase())
+    return orders.filter(
+      (order) =>
+        order.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.phone.includes(searchTerm) ||
+        order.id.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [orders, searchTerm]);
 
@@ -117,18 +102,54 @@ export default function OrdersIndex() {
       await updateOrderStatus(orderId, newStatus);
       toast.success("Order Status updated successfully");
     } catch {
-      toast.error("Failed to update status")
+      toast.error("Failed to update status");
     }
   };
 
-  const handleDelete = async (orderId: string) => {
-    if (!confirm(`Delete order ${orderId}?`)) return;
+  const handleDeleteClick = (orderId: string) => {
+    setOrderToDelete(orderId);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!orderToDelete) return;
     try {
-      await deleteOrder(orderId);
+      await deleteOrder(orderToDelete);
+      toast.success("Order deleted successfully");
     } catch {
       toast.error("Failed to delete order");
+    } finally {
+      setIsConfirmOpen(false);
+      setOrderToDelete(null);
     }
   };
+
+  const handleCancelDelete = () => {
+    setIsConfirmOpen(false);
+    setOrderToDelete(null);
+  };
+
+  useEffect(() => {
+    if (!db) {
+      setError("Firebase not initialized.");
+      setLoading(false);
+      return;
+    }
+    setError(null);
+    setLoading(true);
+
+    const ordersCollectionRef = collection(db, "orders");
+    const q = query(ordersCollectionRef, orderBy("orderDate", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedOrders = snapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() } as FirestoreOrder)
+      );
+      setOrders(fetchedOrders);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   if (loading) return <DashboardSkeleton />;
   if (error)
@@ -143,14 +164,17 @@ export default function OrdersIndex() {
         </CardHeader>
         <CardContent>
           <p className="mb-3">
-            Welcome to admin dashboard. Easily view your orders. For managing products, click on the &apos;Manage product&apos; button and login with your email in sanity. You need to click on the &apos;publish product&apos; button after adding or editing any product.
+            Welcome to admin dashboard. Easily view your orders. For managing
+            products, click on the &apos;Manage product&apos; button and login
+            with your email in sanity. You need to click on the &apos;publish
+            product&apos; button after adding or editing any product.
           </p>
           <Link
             href={process.env.NEXT_PUBLIC_SANITY_STUDIO_URL || "/"}
             target="_blank"
             rel="noopener noreferrer"
           >
-            <GradientButton className="bg-white text-[#A6686A]">
+            <GradientButton className="bg-white text-[#A6686A] cursor-pointer">
               Manage Products
             </GradientButton>
           </Link>
@@ -178,7 +202,7 @@ export default function OrdersIndex() {
           <OrdersTable
             orders={filteredOrders}
             onViewDetails={handleViewDetails}
-            onDelete={handleDelete}
+            onDelete={handleDeleteClick} // Use the new handler
             onStatusChange={handleStatusChange}
           />
         </CardContent>
@@ -188,6 +212,13 @@ export default function OrdersIndex() {
         order={selectedOrder}
         isOpen={isDialogOpen}
         onClose={handleCloseDialog}
+      />
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        title="Delete Order?"
+        description={`Are you sure you want to delete order ${orderToDelete}?`}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
       />
     </div>
   );
