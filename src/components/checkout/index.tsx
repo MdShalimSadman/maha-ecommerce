@@ -30,22 +30,25 @@ type CustomerEmailProps = {
   totalPrice: number;
 };
 
-const CheckoutIndex =()=> {
+const CheckoutIndex = () => {
   const { cartItems, getTotalPrice, clearCart } = useCart();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const setOrderId = useSetAtom(orderIdAtom);
 
   const { register, handleSubmit, formState: { errors } } = useForm<ICheckoutFormData>({
-    defaultValues: { paymentMethod: "cash_on_delivery" },
+    defaultValues: { paymentMethod: "ssl_commerz" },
   });
 
+  // Save order in Firestore
   const saveOrderToFirestore = async (data: ICheckoutFormData): Promise<string | null> => {
     setIsSubmitting(true);
     try {
       const orderData = {
         ...data,
-        items: cartItems.map((item) => ({
+        items: cartItems.map(item => ({
           _id: item._id,
           itemId: item.itemId,
           title: item.title,
@@ -61,31 +64,20 @@ const CheckoutIndex =()=> {
       const docRef = await addDoc(collection(db, "orders"), orderData);
       return docRef.id;
     } catch {
-      toast.error("Something went wrong")
+      toast.error("Something went wrong");
       return null;
     }
   };
 
-  const sendCustomerConfirmationEmail = async ({
-    orderId,
-    email,
-    fullName,
-    totalPrice,
-  }: CustomerEmailProps) => {
+  // Send emails
+  const sendCustomerConfirmationEmail = async ({ orderId, email, fullName, totalPrice }: CustomerEmailProps) => {
     if (!EMAILJS_SERVICE_ID || !EMAILJS_CUSTOMER_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) return;
-
-    const templateParams = {
-      order_id: orderId,
-      to_email: email,
-      customer_name: fullName,
-      total_price: totalPrice.toFixed(2),
-    };
 
     try {
       await emailjs.send(
         EMAILJS_SERVICE_ID,
         EMAILJS_CUSTOMER_TEMPLATE_ID,
-        templateParams,
+        { order_id: orderId, to_email: email, customer_name: fullName, total_price: totalPrice.toFixed(2) },
         EMAILJS_PUBLIC_KEY
       );
     } catch (error) {
@@ -93,28 +85,22 @@ const CheckoutIndex =()=> {
     }
   };
 
-  const sendAdminNotification = async (
-    data: ICheckoutFormData,
-    orderId: string,
-    totalPrice: number
-  ) => {
+  const sendAdminNotification = async (data: ICheckoutFormData, orderId: string, totalPrice: number) => {
     if (!EMAILJS_SERVICE_ID || !EMAILJS_ADMIN_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) return;
-
-    const templateParams = {
-      order_id: orderId,
-      customer_name: data.fullName,
-      to_email: data.email,
-      customer_phone: data.phone,
-      customer_address: data.address,
-      total_price: totalPrice.toFixed(2),
-      payment_method: data.paymentMethod.replace(/_/g, " "),
-    };
 
     try {
       await emailjs.send(
         EMAILJS_SERVICE_ID,
         EMAILJS_ADMIN_TEMPLATE_ID,
-        templateParams,
+        {
+          order_id: orderId,
+          customer_name: data.fullName,
+          to_email: data.email,
+          customer_phone: data.phone,
+          customer_address: data.address,
+          total_price: totalPrice.toFixed(2),
+          payment_method: data.paymentMethod.replace(/_/g, " "),
+        },
         EMAILJS_PUBLIC_KEY
       );
     } catch (error) {
@@ -122,60 +108,139 @@ const CheckoutIndex =()=> {
     }
   };
 
+  // SSL Commerz payment
+  const handlePayment = async (orderId: string, data: ICheckoutFormData) => {
+    setLoading(true);
+
+    const paymentDetails = {
+      amount: getTotalPrice(),
+      customer_name: data.fullName,
+      customer_email: data.email,
+      order_id: orderId,
+    };
+
+    try {
+      const response = await fetch("/api/payment/initiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(paymentDetails),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: "Server error" }));
+        toast.error("Payment initiation failed: " + (errorData.message || response.statusText));
+        setLoading(false);
+        return;
+      }
+
+      const result = await response.json();
+
+      if (result.status === "success" && result.GatewayPageURL) {
+        setPaymentUrl(result.GatewayPageURL); // show iframe
+      } else {
+        toast.error("Payment initiation failed: " + (result.message || "Unknown error"));
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error("An unexpected error occurred during payment.");
+      setLoading(false);
+    }
+  };
+
+  // Form submission
   const onSubmit = async (data: ICheckoutFormData) => {
     const orderId = await saveOrderToFirestore(data);
     const totalPrice = getTotalPrice();
 
-    if (orderId) {
-      setOrderId(orderId);
-
-      await Promise.allSettled([
-        sendCustomerConfirmationEmail({
-          orderId,
-          email: data.email,
-          fullName: data.fullName,
-          totalPrice,
-        }),
-        sendAdminNotification(data, orderId, totalPrice),
-      ]);
-
-      clearCart();
-      router.push("/thank-you");
+    if (!orderId) {
+      setIsSubmitting(false);
+      return;
     }
 
+    setOrderId(orderId);
+
+    await Promise.allSettled([
+      sendCustomerConfirmationEmail({ orderId, email: data.email, fullName: data.fullName, totalPrice }),
+      sendAdminNotification(data, orderId, totalPrice),
+    ]);
+
+    // Always go to SSL Commerz
+    await handlePayment(orderId, data);
     setIsSubmitting(false);
   };
 
-  if (cartItems.length === 0)
+  // Show iframe if paymentUrl exists
+  if (paymentUrl) {
+    return (
+      <div style={{ width: "100%", height: "100vh", display: "flex", flexDirection: "column" }}>
+        <div style={{
+          padding: "10px 20px",
+          backgroundColor: "#0070f3",
+          color: "white",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+          <h3 style={{ margin: 0 }}>Complete Your Payment</h3>
+          <button
+            onClick={() => setPaymentUrl(null)}
+            style={{
+              padding: "5px 15px",
+              backgroundColor: "white",
+              color: "#0070f3",
+              border: "none",
+              borderRadius: "3px",
+              cursor: "pointer"
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+        <iframe
+          src={paymentUrl}
+          style={{ width: "100%", height: "100%", border: "none" }}
+          title="Payment Gateway"
+        />
+      </div>
+    );
+  }
+
+  // Default checkout form
+  if (cartItems.length === 0) {
     return (
       <p className="text-center mt-10 text-lg">
         Your cart is empty <br /> Please add items before checking out.
       </p>
     );
+  }
 
   return (
-    <div className="w-full flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto rounded-xl p-6">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1">
-
-        <CheckoutPersonalInfo register={register} errors={errors} />
-
-        <CheckoutAddressInfo register={register} errors={errors} />
-
-        <CheckoutPaymentMethods register={register} />
-
+    <div style={{ padding: "40px", maxWidth: "800px", margin: "50px auto" }}>
+      <h1 style={{ textAlign: "center", color: "#333" }}>🛒 Checkout</h1>
+      <form onSubmit={handleSubmit(onSubmit)} style={{ marginTop: "30px" }}>
+        <div style={{ marginBottom: "20px" }}>
+          <CheckoutPersonalInfo register={register} errors={errors} />
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <CheckoutAddressInfo register={register} errors={errors} />
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <CheckoutPaymentMethods register={register} />
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <CheckoutOrderSummary cartItems={cartItems} getTotalPrice={getTotalPrice} />
+        </div>
         <GradientButton
           type="submit"
           className="w-full cursor-pointer"
-          disabled={isSubmitting}
+          disabled={isSubmitting || loading}
         >
-          {isSubmitting ? "Placing Order..." : "Place Order"}
+          {isSubmitting || loading ? "Processing..." : "Place Order"}
         </GradientButton>
-
       </form>
-
-      <CheckoutOrderSummary cartItems={cartItems} getTotalPrice={getTotalPrice} />
     </div>
   );
-}
+};
 
 export default CheckoutIndex;
