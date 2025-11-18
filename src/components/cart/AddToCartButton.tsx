@@ -4,7 +4,7 @@
 
 import { useCart, CartItem } from "@/context/CartContext"; // Assuming CartItem is now exported
 import { Button } from "@/components/ui/button";
-import type { Product } from "@/types/types";
+import type { Product } from "@/types/product";
 import GradientButton from "../common/GradientButton";
 
 // Interface for the component props

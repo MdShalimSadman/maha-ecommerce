@@ -2,7 +2,7 @@ import { client } from "@/lib/sanity.client";
 import Image from "next/image";
 
 import ProductInteraction from "@/components/product/ProductInteraction";
-import { Product } from "@/types/types";
+import { Product } from "@/types/product";
 
 interface ProductPageProps {
   params: { slug: string };

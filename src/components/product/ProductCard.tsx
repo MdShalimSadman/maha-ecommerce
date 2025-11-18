@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Product } from "@/types/types";
+import { Product } from "@/types/product";
 import Image from "next/image";
 import { ShoppingCart, Heart } from "lucide-react";
 import { Button } from "../ui/button";

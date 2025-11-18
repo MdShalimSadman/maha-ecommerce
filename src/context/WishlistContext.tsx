@@ -7,7 +7,7 @@ import {
   useState,
   ReactNode,
 } from "react";
-import type { Product } from "@/types/types";
+import type { Product } from "@/types/product";
 import { toast } from "sonner";
 
 interface WishlistContextType {

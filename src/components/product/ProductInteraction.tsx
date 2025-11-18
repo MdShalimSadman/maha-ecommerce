@@ -3,7 +3,7 @@
 'use client'; // 👈 Essential for client-side interactivity (useState, onClick)
 
 import { useState } from 'react';
-import { Product } from '@/types/types';
+import { Product } from '@/types/product';
 import AddToCartButton from '@/components/cart/AddToCartButton';
 import WishlistButton from '@/components/wishlist/WIshlistButton';
 

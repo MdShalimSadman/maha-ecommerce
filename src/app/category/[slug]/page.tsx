@@ -1,7 +1,7 @@
 import { groq } from "next-sanity";
 import { client } from "@/lib/sanity.client";
 import ProductCard from "@/components/product/ProductCard";
-import type { Product } from "@/types/types";
+import type { Product } from "@/types/product";
 import AnimatedHeading from "@/components/common/AnimatedHeading";
 
 const query = groq`

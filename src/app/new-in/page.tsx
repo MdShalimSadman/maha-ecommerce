@@ -1,5 +1,5 @@
 import { client } from "@/lib/sanity.client";
-import type { Product } from "@/types/types";
+import type { Product } from "@/types/product";
 import ProductCard from "@/components/product/ProductCard";
 import AnimatedHeading from "@/components/common/AnimatedHeading";
 

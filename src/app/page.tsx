@@ -1,5 +1,5 @@
 import { getProducts } from "@/lib/sanity.queries";
-import type { Product } from "@/types/types";
+import type { Product } from "@/types/product";
 import ProductsList from "../components/product/ProductsList";
 import Hero from "../components/home/Hero";
 import Categories from "../components/home/Categories";

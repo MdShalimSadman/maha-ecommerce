@@ -5,7 +5,7 @@ import { Search, X, Package, Tag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Image from "next/image";
-import { Product } from "@/types/types"; // Adjust path as needed
+import { Product } from "@/types/product"; // Adjust path as needed
 
 interface SearchResults {
   products: Product[];
