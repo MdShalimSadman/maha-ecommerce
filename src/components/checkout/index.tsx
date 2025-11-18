@@ -31,7 +31,7 @@ type CustomerEmailProps = {
 };
 
 const CheckoutIndex = () => {
-  const { cartItems, getTotalPrice, clearCart } = useCart();
+  const { cartItems, getTotalPrice } = useCart();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,6 @@ const CheckoutIndex = () => {
     defaultValues: { paymentMethod: "ssl_commerz" },
   });
 
-  // Save order in Firestore
   const saveOrderToFirestore = async (data: ICheckoutFormData): Promise<string | null> => {
     setIsSubmitting(true);
     try {
@@ -60,7 +59,6 @@ const CheckoutIndex = () => {
         orderDate: serverTimestamp(),
         status: "Pending",
       };
-
       const docRef = await addDoc(collection(db, "orders"), orderData);
       return docRef.id;
     } catch {
@@ -69,10 +67,8 @@ const CheckoutIndex = () => {
     }
   };
 
-  // Send emails
   const sendCustomerConfirmationEmail = async ({ orderId, email, fullName, totalPrice }: CustomerEmailProps) => {
     if (!EMAILJS_SERVICE_ID || !EMAILJS_CUSTOMER_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) return;
-
     try {
       await emailjs.send(
         EMAILJS_SERVICE_ID,
@@ -87,7 +83,6 @@ const CheckoutIndex = () => {
 
   const sendAdminNotification = async (data: ICheckoutFormData, orderId: string, totalPrice: number) => {
     if (!EMAILJS_SERVICE_ID || !EMAILJS_ADMIN_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) return;
-
     try {
       await emailjs.send(
         EMAILJS_SERVICE_ID,
@@ -108,17 +103,14 @@ const CheckoutIndex = () => {
     }
   };
 
-  // SSL Commerz payment
   const handlePayment = async (orderId: string, data: ICheckoutFormData) => {
     setLoading(true);
-
     const paymentDetails = {
       amount: getTotalPrice(),
       customer_name: data.fullName,
       customer_email: data.email,
       order_id: orderId,
     };
-
     try {
       const response = await fetch("/api/payment/initiate", {
         method: "POST",
@@ -136,19 +128,23 @@ const CheckoutIndex = () => {
       const result = await response.json();
 
       if (result.status === "success" && result.GatewayPageURL) {
-        setPaymentUrl(result.GatewayPageURL); // show iframe
+        // 🔹 Sandbox: open in new tab
+        if (process.env.NODE_ENV === "development") {
+          window.open(result.GatewayPageURL, "_blank");
+        } else {
+          setPaymentUrl(result.GatewayPageURL); // Live: iframe
+        }
       } else {
         toast.error("Payment initiation failed: " + (result.message || "Unknown error"));
-        setLoading(false);
       }
     } catch (error) {
       console.error("Payment error:", error);
       toast.error("An unexpected error occurred during payment.");
+    } finally {
       setLoading(false);
     }
   };
 
-  // Form submission
   const onSubmit = async (data: ICheckoutFormData) => {
     const orderId = await saveOrderToFirestore(data);
     const totalPrice = getTotalPrice();
@@ -165,12 +161,11 @@ const CheckoutIndex = () => {
       sendAdminNotification(data, orderId, totalPrice),
     ]);
 
-    // Always go to SSL Commerz
+    // Always go to SSLCommerz
     await handlePayment(orderId, data);
     setIsSubmitting(false);
   };
 
-  // Show iframe if paymentUrl exists
   if (paymentUrl) {
     return (
       <div style={{ width: "100%", height: "100vh", display: "flex", flexDirection: "column" }}>
@@ -206,7 +201,6 @@ const CheckoutIndex = () => {
     );
   }
 
-  // Default checkout form
   if (cartItems.length === 0) {
     return (
       <p className="text-center mt-10 text-lg">
