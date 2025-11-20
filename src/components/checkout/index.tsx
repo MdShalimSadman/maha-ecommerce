@@ -34,8 +34,6 @@ const CheckoutIndex = () => {
   const { cartItems, getTotalPrice } = useCart();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const setOrderId = useSetAtom(orderIdAtom);
 
   const { register, handleSubmit, formState: { errors } } = useForm<ICheckoutFormData>({
@@ -103,14 +101,18 @@ const CheckoutIndex = () => {
     }
   };
 
-  const handlePayment = async (orderId: string, data: ICheckoutFormData) => {
-    setLoading(true);
+  // Redirect to SSLCommerz payment page
+  const handlePaymentRedirect = async (orderId: string, data: ICheckoutFormData) => {
     const paymentDetails = {
       amount: getTotalPrice(),
       customer_name: data.fullName,
       customer_email: data.email,
       order_id: orderId,
+      // set your redirect URLs here
+      success_url: `${window.location.origin}/thank-you`,
+      fail_url: `${window.location.origin}/checkout`, 
     };
+
     try {
       const response = await fetch("/api/payment/initiate", {
         method: "POST",
@@ -121,27 +123,20 @@ const CheckoutIndex = () => {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: "Server error" }));
         toast.error("Payment initiation failed: " + (errorData.message || response.statusText));
-        setLoading(false);
         return;
       }
 
       const result = await response.json();
 
       if (result.status === "success" && result.GatewayPageURL) {
-        // 🔹 Sandbox: open in new tab
-        if (process.env.NODE_ENV === "development") {
-          window.open(result.GatewayPageURL, "_blank");
-        } else {
-          setPaymentUrl(result.GatewayPageURL); // Live: iframe
-        }
+        // 🔹 Redirect in the same tab
+        window.location.href = result.GatewayPageURL;
       } else {
         toast.error("Payment initiation failed: " + (result.message || "Unknown error"));
       }
     } catch (error) {
       console.error("Payment error:", error);
       toast.error("An unexpected error occurred during payment.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -161,45 +156,10 @@ const CheckoutIndex = () => {
       sendAdminNotification(data, orderId, totalPrice),
     ]);
 
-    // Always go to SSLCommerz
-    await handlePayment(orderId, data);
+    // Always redirect to SSLCommerz
+    await handlePaymentRedirect(orderId, data);
     setIsSubmitting(false);
   };
-
-  if (paymentUrl) {
-    return (
-      <div style={{ width: "100%", height: "100vh", display: "flex", flexDirection: "column" }}>
-        <div style={{
-          padding: "10px 20px",
-          backgroundColor: "#0070f3",
-          color: "white",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}>
-          <h3 style={{ margin: 0 }}>Complete Your Payment</h3>
-          <button
-            onClick={() => setPaymentUrl(null)}
-            style={{
-              padding: "5px 15px",
-              backgroundColor: "white",
-              color: "#0070f3",
-              border: "none",
-              borderRadius: "3px",
-              cursor: "pointer"
-            }}
-          >
-            Cancel
-          </button>
-        </div>
-        <iframe
-          src={paymentUrl}
-          style={{ width: "100%", height: "100%", border: "none" }}
-          title="Payment Gateway"
-        />
-      </div>
-    );
-  }
 
   if (cartItems.length === 0) {
     return (
@@ -228,9 +188,9 @@ const CheckoutIndex = () => {
         <GradientButton
           type="submit"
           className="w-full cursor-pointer"
-          disabled={isSubmitting || loading}
+          disabled={isSubmitting}
         >
-          {isSubmitting || loading ? "Processing..." : "Place Order"}
+          {isSubmitting ? "Processing..." : "Place Order"}
         </GradientButton>
       </form>
     </div>

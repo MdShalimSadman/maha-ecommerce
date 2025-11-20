@@ -1,4 +1,3 @@
-// app/payment/failed/page.js
 'use client';
 
 import { useSearchParams } from 'next/navigation';

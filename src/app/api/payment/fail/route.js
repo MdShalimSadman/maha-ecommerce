@@ -18,7 +18,7 @@ export async function POST(request) {
         // await updatePaymentStatus(tran_id, 'FAILED', data);
 
         return NextResponse.redirect(
-            new URL(`/payment/failed?transactionId=${tran_id}&error=${error || 'Payment failed'}`, request.url)
+            new URL(`/payment-failed?transactionId=${tran_id}&error=${error || 'Payment failed'}`, request.url)
         );
 
     } catch (error) {
@@ -34,6 +34,6 @@ export async function GET(request) {
     const tran_id = searchParams.get('transactionId');
     
     return NextResponse.redirect(
-        new URL(`/payment/failed?transactionId=${tran_id}`, request.url)
+        new URL(`/payment-failed?transactionId=${tran_id}`, request.url)
     );
 }
