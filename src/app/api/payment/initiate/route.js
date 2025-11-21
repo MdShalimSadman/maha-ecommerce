@@ -1,9 +1,10 @@
-// app/api/payment/initiate/route.js
 import { NextResponse } from 'next/server';
 
+// Environment variables for SSLCommerz
 const store_id = process.env.SSL_COMMERZ_STORE_ID;
 const store_passwd = process.env.SSL_COMMERZ_STORE_PASSWORD;
-const is_live = false;
+// Assuming is_live is based on environment variable for better practice
+const is_live = process.env.NODE_ENV === 'production'; 
 
 export async function POST(request) {
     if (!store_id || !store_passwd) {
@@ -24,17 +25,21 @@ export async function POST(request) {
         );
     }
 
-    const { amount, customer_name, customer_email } = bodyData;
+    // Extract the order_id (Firestore ID)
+    const { amount, customer_name, customer_email, order_id } = bodyData;
     
-    if (!amount || !customer_name || !customer_email) {
+    if (!amount || !customer_name || !customer_email || !order_id) {
         return NextResponse.json(
-            { message: 'Missing required fields' },
+            { message: 'Missing required fields (amount, name, email, or order_id)' },
             { status: 400 }
         );
     }
 
+    // Generate a unique transaction ID for SSLCommerz
     const tran_id = 'TRN_' + Date.now();
-    const base_url = process.env.BASE_URL || 'http://localhost:3000';
+    
+    // Use the dynamic base URL from the request headers
+    const base_url = request.headers.get('x-forwarded-proto') + '://' + request.headers.get('host');
 
     // SSLCommerz API endpoint
     const sslczUrl = is_live 
@@ -47,28 +52,34 @@ export async function POST(request) {
         total_amount: parseFloat(amount),
         currency: 'BDT',
         tran_id: tran_id,
+        
+        // Pass the Firestore order ID using the custom 'value_a' field
+        value_a: order_id, 
+
+        // Redirect URLs
         success_url: `${base_url}/api/payment/success`,
         fail_url: `${base_url}/api/payment/fail`,
         cancel_url: `${base_url}/checkout`,
         ipn_url: `${base_url}/api/payment/ipn`,
         
+        // Customer Info (Using placeholder data where not provided by client)
         cus_name: customer_name,
         cus_email: customer_email,
-        cus_add1: 'Dhaka',
+        cus_add1: 'Dhaka', // Should be replaced with actual shipping address fields
         cus_city: 'Dhaka',
         cus_state: 'Dhaka',
         cus_postcode: '1000',
         cus_country: 'Bangladesh',
-        cus_phone: '01711111111',
-        
+        cus_phone: '01711111111', // Should be replaced with actual phone number
+
+        // Product Info
         shipping_method: 'NO',
-        product_name: 'Test Product',
-        product_category: 'Electronic',
+        product_name: 'E-commerce Order',
+        product_category: 'Merchandise',
         product_profile: 'general',
     };
 
     try {
-        // Direct fetch call to SSLCommerz API
         const response = await fetch(sslczUrl, {
             method: 'POST',
             headers: {
@@ -79,7 +90,7 @@ export async function POST(request) {
 
         const apiResponse = await response.json();
         
-        console.log('SSLCommerz Response:', apiResponse);
+        console.log('SSLCommerz Initiation Response:', apiResponse);
 
         if (apiResponse.status === 'SUCCESS' && apiResponse.GatewayPageURL) {
             return NextResponse.json({ 

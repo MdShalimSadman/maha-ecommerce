@@ -7,10 +7,12 @@ import { useState } from "react";
 import { useSetAtom } from "jotai";
 import { orderIdAtom } from "@/atoms/orderAtom";
 import emailjs from "@emailjs/browser";
-import { db } from "@/lib/firebaseClient";
+// Assuming this is client-side initialization, using firebase/firestore
+import { db } from "@/lib/firebaseClient"; 
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import GradientButton from "@/components/common/GradientButton";
 
+// Assuming these components and types exist
 import CheckoutPersonalInfo from "./CheckoutPersonalInfo";
 import CheckoutAddressInfo from "./CheckoutAddressInfo";
 import CheckoutPaymentMethods from "./CheckoutPaymentMethods";
@@ -43,6 +45,9 @@ const CheckoutIndex = () => {
   const saveOrderToFirestore = async (data: ICheckoutFormData): Promise<string | null> => {
     setIsSubmitting(true);
     try {
+      // 💡 Ensure the database path aligns with your Firestore Security Rules
+      // For collaborative apps, this should be: /artifacts/{appId}/public/data/orders
+      // Since this looks like a generic e-commerce checkout, assuming a simple 'orders' collection.
       const orderData = {
         ...data,
         items: cartItems.map(item => ({
@@ -55,12 +60,15 @@ const CheckoutIndex = () => {
         })),
         totalPrice: getTotalPrice(),
         orderDate: serverTimestamp(),
+        // Initial status is pending payment
         status: "Pending",
+        payment_status: "Awaiting Payment", 
       };
       const docRef = await addDoc(collection(db, "orders"), orderData);
       return docRef.id;
-    } catch {
-      toast.error("Something went wrong");
+    } catch(e) {
+      console.error("Firestore Save Error:", e);
+      toast.error("Failed to save order. Please try again.");
       return null;
     }
   };
@@ -107,8 +115,10 @@ const CheckoutIndex = () => {
       amount: getTotalPrice(),
       customer_name: data.fullName,
       customer_email: data.email,
-      order_id: orderId,
-      // set your redirect URLs here
+      order_id: orderId, // 💡 This is the critical Firestore ID being passed to the API
+      payment_status:"pending",
+      // These are only used if the client doesn't get redirected to the gateway, 
+      // but the API redirects to /api/payment/success or /api/payment/fail/
       success_url: `${window.location.origin}/thank-you`,
       fail_url: `${window.location.origin}/checkout`, 
     };
@@ -129,7 +139,7 @@ const CheckoutIndex = () => {
       const result = await response.json();
 
       if (result.status === "success" && result.GatewayPageURL) {
-        // 🔹 Redirect in the same tab
+        // 🔹 Redirect the user to the gateway URL provided by the API
         window.location.href = result.GatewayPageURL;
       } else {
         toast.error("Payment initiation failed: " + (result.message || "Unknown error"));
@@ -141,6 +151,7 @@ const CheckoutIndex = () => {
   };
 
   const onSubmit = async (data: ICheckoutFormData) => {
+    setIsSubmitting(true);
     const orderId = await saveOrderToFirestore(data);
     const totalPrice = getTotalPrice();
 
@@ -151,46 +162,61 @@ const CheckoutIndex = () => {
 
     setOrderId(orderId);
 
+    // Send emails (optional, can be done after payment success too)
     await Promise.allSettled([
       sendCustomerConfirmationEmail({ orderId, email: data.email, fullName: data.fullName, totalPrice }),
       sendAdminNotification(data, orderId, totalPrice),
     ]);
 
-    // Always redirect to SSLCommerz
+    // Proceed to payment gateway redirection
     await handlePaymentRedirect(orderId, data);
-    setIsSubmitting(false);
+    
+    // Note: setIsSubmitting(false) is not reached if redirect is successful, 
+    // but we can put it here for the failed payment initiation case.
+    // If the redirect fails, this will re-enable the button.
+    setIsSubmitting(false); 
   };
 
   if (cartItems.length === 0) {
     return (
-      <p className="text-center mt-10 text-lg">
-        Your cart is empty <br /> Please add items before checking out.
+      <p className="text-center mt-10 text-lg p-8 rounded-xl bg-white shadow-lg max-w-lg mx-auto">
+        Your cart is empty. <br /> Please add items before checking out.
       </p>
     );
   }
 
   return (
-    <div style={{ padding: "40px", maxWidth: "800px", margin: "50px auto" }}>
-      <h1 style={{ textAlign: "center", color: "#333" }}>🛒 Checkout</h1>
-      <form onSubmit={handleSubmit(onSubmit)} style={{ marginTop: "30px" }}>
-        <div style={{ marginBottom: "20px" }}>
+    <div className="p-4 md:p-8 lg:p-10 max-w-4xl mx-auto my-10 bg-white shadow-2xl rounded-xl">
+      <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
+        🛒 Secure Checkout
+      </h1>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <div className="p-6 border border-gray-200 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold mb-4 text-indigo-600">1. Personal Information</h2>
           <CheckoutPersonalInfo register={register} errors={errors} />
         </div>
-        <div style={{ marginBottom: "20px" }}>
+        
+        <div className="p-6 border border-gray-200 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold mb-4 text-indigo-600">2. Shipping Address</h2>
           <CheckoutAddressInfo register={register} errors={errors} />
         </div>
-        <div style={{ marginBottom: "20px" }}>
+        
+        <div className="p-6 border border-gray-200 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold mb-4 text-indigo-600">3. Payment Method</h2>
           <CheckoutPaymentMethods register={register} />
         </div>
-        <div style={{ marginBottom: "20px" }}>
+        
+        <div className="p-6 border border-gray-200 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold mb-4 text-indigo-600">4. Order Summary</h2>
           <CheckoutOrderSummary cartItems={cartItems} getTotalPrice={getTotalPrice} />
         </div>
+        
         <GradientButton
           type="submit"
-          className="w-full cursor-pointer"
+          className="w-full py-3 text-lg font-bold transition duration-300"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Processing..." : "Place Order"}
+          {isSubmitting ? "Redirecting to Payment..." : "Confirm & Proceed to Payment"}
         </GradientButton>
       </form>
     </div>
