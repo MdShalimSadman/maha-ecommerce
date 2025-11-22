@@ -4,15 +4,11 @@ import { useCart } from "@/context/CartContext";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useSetAtom } from "jotai";
-import { orderIdAtom } from "@/atoms/orderAtom";
 import emailjs from "@emailjs/browser";
-// Assuming this is client-side initialization, using firebase/firestore
 import { db } from "@/lib/firebaseClient"; 
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import GradientButton from "@/components/common/GradientButton";
 
-// Assuming these components and types exist
 import CheckoutPersonalInfo from "./CheckoutPersonalInfo";
 import CheckoutAddressInfo from "./CheckoutAddressInfo";
 import CheckoutPaymentMethods from "./CheckoutPaymentMethods";
@@ -36,7 +32,6 @@ const CheckoutIndex = () => {
   const { cartItems, getTotalPrice } = useCart();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const setOrderId = useSetAtom(orderIdAtom);
 
   const { register, handleSubmit, formState: { errors } } = useForm<ICheckoutFormData>({
     defaultValues: { paymentMethod: "ssl_commerz" },
@@ -115,11 +110,9 @@ const CheckoutIndex = () => {
       amount: getTotalPrice(),
       customer_name: data.fullName,
       customer_email: data.email,
-      order_id: orderId, // 💡 This is the critical Firestore ID being passed to the API
+      order_id: orderId,
       payment_status:"pending",
-      // These are only used if the client doesn't get redirected to the gateway, 
-      // but the API redirects to /api/payment/success or /api/payment/fail/
-      success_url: `${window.location.origin}/thank-you`,
+      success_url: `${window.location.origin}/payment-success`,
       fail_url: `${window.location.origin}/checkout`, 
     };
 
@@ -159,8 +152,6 @@ const CheckoutIndex = () => {
       setIsSubmitting(false);
       return;
     }
-
-    setOrderId(orderId);
 
     // Send emails (optional, can be done after payment success too)
     await Promise.allSettled([
