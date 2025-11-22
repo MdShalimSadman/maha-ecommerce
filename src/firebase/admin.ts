@@ -4,6 +4,7 @@ import { initializeApp, getApps } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'; 
 // Import Auth functionality for admin operations
 import { getAuth } from 'firebase-admin/auth'; 
+import { OrderDetails } from '@/types/order';
 
 
 const serviceAccount = {
@@ -12,7 +13,7 @@ const serviceAccount = {
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
 };
 
-// Only initialize the app if it hasn't been initialized already
+
 if (!getApps().length) {
     try {
         initializeApp({
@@ -24,13 +25,16 @@ if (!getApps().length) {
     }
 }
 
+// --- 3. Get Service Instances ---
+
 // Get the Firestore database instance
 const adminDb = getFirestore();
 
 // Get the Auth instance
 const adminAuth = getAuth();
 
-const updatePaymentStatus = async (orderId, tran_id, validationData) => {
+
+const updatePaymentStatus = async (orderId: string, tran_id: string, validationData: Record<string, any>) => {
     try {
         const orderRef = adminDb.collection('orders').doc(orderId);
         
@@ -50,9 +54,14 @@ const updatePaymentStatus = async (orderId, tran_id, validationData) => {
     }
 };
 
-async function fetchOrderDetails(orderId: string) {
-    // ⚠️ IMPLEMENT THIS: Use Firebase Admin SDK to fetch the document
-    const orderDoc = await admin.firestore().collection('orders').doc(orderId).get();
+/**
+ * Fetches required details for a given order ID from Firestore.
+ * @param orderId The unique ID of the order.
+ * @returns An object containing key order details.
+ */
+async function fetchOrderDetails(orderId: string): Promise<OrderDetails> {
+    // FIX: Use the 'adminDb' constant initialized with getFirestore()
+    const orderDoc = await adminDb.collection('orders').doc(orderId).get();
 
     if (!orderDoc.exists) {
         throw new Error(`Order with ID ${orderId} not found.`);
@@ -60,15 +69,23 @@ async function fetchOrderDetails(orderId: string) {
 
     const data = orderDoc.data();
     
+    if (!data) {
+        throw new Error(`Order data for ID ${orderId} is empty.`);
+    }
+    
+    // NOTE: Adjust field names (customerEmail, amount, etc.) to match your actual Firestore schema.
     return {
-        email: data.customerEmail, // Adjust field names to match your schema
-        fullName: data.customerName,
-        totalPrice: data.amount,
-        address: data.shippingAddress,
-        phone: data.customerPhone,
+        email: data.email, 
+        fullName: data.fullName,
+        totalPrice: data.totalPrice,
+        address: data.address,
+        phone: data.phone,
         paymentMethod: data.paymentMethod,
-    };
+    } as OrderDetails; // Type casting for safety
 }
 
-// Export all necessary utilities: DB, Auth, and the payment function
+
+// --- 5. Exports ---
+
+// Export all necessary utilities: DB, Auth, and the payment functions
 export { adminDb, adminAuth, updatePaymentStatus, fetchOrderDetails };

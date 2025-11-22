@@ -16,11 +16,6 @@ import CheckoutOrderSummary from "./CheckoutOrderSummary";
 import { ICheckoutFormData } from "@/types/checkout";
 import { toast } from "sonner";
 
-const EMAILJS_SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
-const EMAILJS_CUSTOMER_TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
-const EMAILJS_ADMIN_TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID;
-const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
-
 type CustomerEmailProps = {
   orderId: string;
   email: string;
@@ -65,42 +60,6 @@ const CheckoutIndex = () => {
       console.error("Firestore Save Error:", e);
       toast.error("Failed to save order. Please try again.");
       return null;
-    }
-  };
-
-  const sendCustomerConfirmationEmail = async ({ orderId, email, fullName, totalPrice }: CustomerEmailProps) => {
-    if (!EMAILJS_SERVICE_ID || !EMAILJS_CUSTOMER_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) return;
-    try {
-      await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_CUSTOMER_TEMPLATE_ID,
-        { order_id: orderId, to_email: email, customer_name: fullName, total_price: totalPrice.toFixed(2) },
-        EMAILJS_PUBLIC_KEY
-      );
-    } catch (error) {
-      console.error("Customer email error:", error);
-    }
-  };
-
-  const sendAdminNotification = async (data: ICheckoutFormData, orderId: string, totalPrice: number) => {
-    if (!EMAILJS_SERVICE_ID || !EMAILJS_ADMIN_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) return;
-    try {
-      await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_ADMIN_TEMPLATE_ID,
-        {
-          order_id: orderId,
-          customer_name: data.fullName,
-          to_email: data.email,
-          customer_phone: data.phone,
-          customer_address: data.address,
-          total_price: totalPrice.toFixed(2),
-          payment_method: data.paymentMethod.replace(/_/g, " "),
-        },
-        EMAILJS_PUBLIC_KEY
-      );
-    } catch (error) {
-      console.error("Admin email error:", error);
     }
   };
 
@@ -153,18 +112,8 @@ const CheckoutIndex = () => {
       return;
     }
 
-    // Send emails (optional, can be done after payment success too)
-    await Promise.allSettled([
-      sendCustomerConfirmationEmail({ orderId, email: data.email, fullName: data.fullName, totalPrice }),
-      sendAdminNotification(data, orderId, totalPrice),
-    ]);
-
-    // Proceed to payment gateway redirection
     await handlePaymentRedirect(orderId, data);
     
-    // Note: setIsSubmitting(false) is not reached if redirect is successful, 
-    // but we can put it here for the failed payment initiation case.
-    // If the redirect fails, this will re-enable the button.
     setIsSubmitting(false); 
   };
 
@@ -177,31 +126,23 @@ const CheckoutIndex = () => {
   }
 
   return (
-    <div className="p-4 md:p-8 lg:p-10 max-w-4xl mx-auto my-10 bg-white shadow-2xl rounded-xl">
-      <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
-        🛒 Secure Checkout
-      </h1>
+    <div className=" p-4 md:p-8 lg:p-10 max-w-4xl mx-auto my-10 bg-white shadow-2xl rounded-xl">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <div className="p-6 border border-gray-200 rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold mb-4 text-indigo-600">1. Personal Information</h2>
+     
+   
           <CheckoutPersonalInfo register={register} errors={errors} />
-        </div>
+   
         
-        <div className="p-6 border border-gray-200 rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold mb-4 text-indigo-600">2. Shipping Address</h2>
+      
           <CheckoutAddressInfo register={register} errors={errors} />
-        </div>
+
         
-        <div className="p-6 border border-gray-200 rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold mb-4 text-indigo-600">3. Payment Method</h2>
+      
           <CheckoutPaymentMethods register={register} />
-        </div>
         
-        <div className="p-6 border border-gray-200 rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold mb-4 text-indigo-600">4. Order Summary</h2>
+        
+      
           <CheckoutOrderSummary cartItems={cartItems} getTotalPrice={getTotalPrice} />
-        </div>
-        
         <GradientButton
           type="submit"
           className="w-full py-3 text-lg font-bold transition duration-300"
