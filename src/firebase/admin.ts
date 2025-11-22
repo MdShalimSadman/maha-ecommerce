@@ -50,5 +50,25 @@ const updatePaymentStatus = async (orderId, tran_id, validationData) => {
     }
 };
 
+async function fetchOrderDetails(orderId: string) {
+    // ⚠️ IMPLEMENT THIS: Use Firebase Admin SDK to fetch the document
+    const orderDoc = await admin.firestore().collection('orders').doc(orderId).get();
+
+    if (!orderDoc.exists) {
+        throw new Error(`Order with ID ${orderId} not found.`);
+    }
+
+    const data = orderDoc.data();
+    
+    return {
+        email: data.customerEmail, // Adjust field names to match your schema
+        fullName: data.customerName,
+        totalPrice: data.amount,
+        address: data.shippingAddress,
+        phone: data.customerPhone,
+        paymentMethod: data.paymentMethod,
+    };
+}
+
 // Export all necessary utilities: DB, Auth, and the payment function
-export { adminDb, adminAuth, updatePaymentStatus };
+export { adminDb, adminAuth, updatePaymentStatus, fetchOrderDetails };
